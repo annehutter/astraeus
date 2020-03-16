@@ -1,0 +1,19 @@
+#ifndef SELF_SHIELDING_H
+#define SELF_SHIELDING_H
+
+double ss_calc_modPhotHI(double densH, double densSS);
+double ss_calc_densSS(confObj_t simParam, double photHI, double temperature, double redshift);
+double ss_calc_XHII(double dens, double photHI, double temp, double Y);
+// void compute_photoionization_field(grid_t *thisGrid, sourcelist_t *thisSourcelist, confObj_t simParam);
+// void construct_photHI_filter(fftw_complex *filter, grid_t *thisGrid, confObj_t simParam);
+void convolve_fft_photHI(grid_t *thisGrid, fftw_complex *filter, fftw_complex *nion_smooth, const double factor_photHI);
+void replace_convolve_fft_photHI(grid_t *thisGrid, confObj_t simParam, fftw_complex *nion_smooth, const double factor_photHI);
+void compute_photHI(grid_t *thisGrid, confObj_t simParam, int rescale);
+double calc_mean_photoionization_ionized_field(grid_t *thisGrid);
+double calc_factor_photoionization_ionfraction(grid_t *thisGrid, confObj_t simParam);
+void set_value_to_photoionization_field(grid_t *thisGrid, confObj_t simParam);
+void set_value_to_photHI_bg(confObj_t simParam, double value);
+void compute_photHI_ionizedRegions(grid_t *thisGrid, confObj_t simParam);
+void compute_web_ionfraction(grid_t *thisGrid, confObj_t simParam);
+
+#endif
