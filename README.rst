@@ -1,12 +1,14 @@
-# astraeus
-Home of the semi-analytical / semi-numerical galaxy evolution and reionization code ASTRAEUS (semi-numerical r**A**diative tran**S**fer coupling of galaxy forma**T**ion and **R**eionization in N-body d**A**rk matt**E**r sim**U**lation**S**)
+ASTRAEUS
+========
+
+Home of the semi-analytical / semi-numerical galaxy evolution and reionization code ASTRAEUS (semi-numerical rAdiative tranSfer coupling of galaxy formaTion and Reionization in n-body dArk mattEr simUlationS)
 
 When you should use this code
 =============================
 
 If you want to compute the self-consistent evolution of high-redshift galaxy properties and reionization, i.e. the galaxy properties in the presence of an inhomogeneous ultraviolet background and when and how (HI, HeII, HeIII) reionization occurs, then you should use this code. You will need 
 
-- merger trees generated with ``cuteNresort``
+- merger trees generated with ``cutNresort``
 - (optional) cosmological box with DM/gas overdensities **or** gas densities (grid); if none are given, DM/gas density is assumed to be homogeneous.
 
 Why should you use it
@@ -70,4 +72,4 @@ The first test case can then be run by
 
     $ ./astraeus iniFile.ini
 
-``iniFile.ini`` contains all input parameters that are needed for any runs. For a different simulation the code does not need to be recompiled but only the parameter file iniFile.ini to be adapted.
+``iniFile.ini`` contain all input parameters that are needed for any run. For a different simulation the code does not need to be recompiled but only the parameter file iniFile.ini to be adapted.
