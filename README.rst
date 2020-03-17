@@ -17,6 +17,13 @@ Why should you use it
 1. **Modular** The code is written modular fashion, i.e. different modules can be switched on or off or chosen (see below for the inifiles).
 2. **MPI Parallel** The code can be run on multiple cores and distributed memory.
 
+Source files
+============
+
+The astraeus directory constains the Makefile as well as the executable ``astraeus`` after the source code in the `src <https://github.com/annehutter/astraeus/src>`__ directory has been compiled.
+
+The directory `analysis <https://github.com/annehutter/astraeus/analysis>`__ constains an analysis code that runs on the ``ASTRAEUS`` tree output files. 
+
 Installation
 ============
 
