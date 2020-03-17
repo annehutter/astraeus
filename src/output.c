@@ -270,12 +270,12 @@ void copy_iniFile_executable(char *outputfile)
     char *source_ini = "iniFile.ini";
     char *target_ini;
     
-    char *source_exe = "delphi";
+    char *source_exe = "astraeus";
     char *target_exe;
     
       
     target_ini = concat_strings(2, outputfile, "/iniFile.ini");
-    target_exe = concat_strings(2, outputfile, "/delphi");
+    target_exe = concat_strings(2, outputfile, "/astraeus");
     
     copy_file(source_ini, target_ini);
     copy_file(source_exe, target_exe);
