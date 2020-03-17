@@ -20,7 +20,7 @@ Parallel run
 Download & Build
 ----------------
 
-The source code of this ``ASTRAEUS`` analysis program is downloaded when cloning the ` ``ASTRAEUS`` repository <https://github.com/annehutter/astraeus>`__:
+The source code of this ``ASTRAEUS`` analysis program is downloaded when cloning the `ASTRAEUS repository <https://github.com/annehutter/astraeus>`__:
 ::
 
     $ git clone https://github.com/annehutter/astraeus.git
@@ -32,7 +32,7 @@ This will download the code and a test case from the github directory and compil
 Execution
 ---------
 
-The first test case can then be run by
+The analysis can then be run by
 ::
 
     $ ./analyse iniFile.ini
@@ -110,7 +110,7 @@ Parameter File
 
 - ``trackEvolution`` = *[integer]* identifier whether history across all available snapshots should be calculated [value: 1] or not [value: 0]
 
-**[1dHistogramEvolution]**
+**[1dHistogramEvolution]** *This part is only relevant when ``trackEvolution=1``*
 
 - ``num_1D_evolution`` = *[integer]* number of number density histograms to compute or the length of the lists below
 - ``property_1D_evolution`` = *[list of properties]* property whose redshift evolution (history) should be obtained; possible options: Mvir, MgasIni, Mgas, fg, Mstar, SFR, photHI_bg, zreion, DENS, ION
