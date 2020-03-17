@@ -142,3 +142,8 @@ Parameter File
 - ``verticalOutput`` = *[integer]* write [value: 1] or do not write [value: 0] vertical outputs or tree files constaining properties of galaxies in trees
 - ``percentageOfTreesToWrite`` = *[integer]* percentage of trees to be written [default: 100]
 - ``outputFile`` = path for directory where output files are to be written
+
+Analysis
+========
+
+The tree outputs generated with ``ASTRAEUS`` can be analysed using our analysis code `here <https://github.com/annehutter/astraeus/analysis>`__.
