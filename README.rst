@@ -8,7 +8,7 @@ When you should use this code
 
 If you want to compute the self-consistent evolution of high-redshift galaxy properties and reionization, i.e. the galaxy properties in the presence of an inhomogeneous ultraviolet background and the time evolution of the ionization (HI, HeII, HeIII) fields, then you should use this code. You will need 
 
-- merger trees generated with ``ROCKSTAR`` and resorted to be locally horizontal with ``cutNresort``.
+- merger trees generated with ``Consistent-Trees`` and resorted to be locally horizontal with ``cutNresort``.
 - (optional) cosmological box with DM/gas overdensities **or** gas densities (grid); if none are given, DM/gas density is assumed to be homogeneous.
 
 Why should you use it
