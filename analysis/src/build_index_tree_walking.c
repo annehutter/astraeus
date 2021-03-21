@@ -56,7 +56,6 @@ int search_index(int index, int **listEquals)
 
   while(is_not_in_thisList(index, listEquals[wantedList]))
   {
-//     printf("listEquals[%d][0] = %d\twantedList = %d\n", wantedList, listEquals[wantedList][0], wantedList);
     wantedList++;
   }
   

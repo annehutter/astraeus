@@ -18,8 +18,8 @@ double cutandresort(gtree_t **theseGtrees, int numGtrees, int outSnap, gtree_t *
     int **listEquals = NULL;
     int *index = NULL;
     int treeToPutThisGalIn;
-    int list_containing_index_prog;
-    int list_containing_index_desc;
+    int listContainingIndexProg;
+    int listContainingIndexDesc;
     int numberNewGtrees = 0;
     gtree_t **theseNewGtrees = NULL;
     gal_t thisGal;
@@ -30,7 +30,7 @@ double cutandresort(gtree_t **theseGtrees, int numGtrees, int outSnap, gtree_t *
         index = malloc(sizeof(int) * theseGtrees[i]->numGal);
         for(int h=0; h<theseGtrees[i]->numGal; h++)
             index[h] = -1;
-        numberOfRoots = getNumberOfRoot(theseGtrees[i], outSnap);
+        numberOfRoots = get_number_of_root(theseGtrees[i], outSnap);
         if(numberOfRoots != 0)
         {
             j = 0;
@@ -52,10 +52,14 @@ double cutandresort(gtree_t **theseGtrees, int numGtrees, int outSnap, gtree_t *
                     index[thisGal.localDescID] = index[j];
                 else
                 {
-                    list_containing_index_prog = search_index(index[j], listEquals);
-                    list_containing_index_desc = search_index(index[thisGal.localDescID], listEquals);
-                    mergeLists(&listEquals, &sizeListEquals, list_containing_index_prog, list_containing_index_desc);
+                    listContainingIndexProg = search_branch(index[j], listEquals);
+                    listContainingIndexDesc = search_branch(index[thisGal.localDescID], listEquals);
+                    merge_lists(&listEquals, &sizeListEquals, listContainingIndexProg, listContainingIndexDesc);
                 }
+                
+                if(thisGal.snapnumber == outSnap)
+                    (theseGtrees[i]->galaxies+j)->localDescID = -1;
+                
                 j++;
 
             }
@@ -65,21 +69,22 @@ double cutandresort(gtree_t **theseGtrees, int numGtrees, int outSnap, gtree_t *
                 printf("for tree %d : different size in test.c line 54 !\n number of roots = %d and size of list of equivalent index = %d\n", i, numberOfRoots, sizeListEquals);
                 exit(0);
             }
+            
             new_trees = malloc(sizeof(gtree_t*) * sizeListEquals);
             for(int t=0; t<sizeListEquals; t++)
             {
                 new_trees[t] = initGtree(1); // have to initialize at 1 gal
                 new_trees[t]->numGal = -1;
             }
-            
 
             for(int l=0; l<j; l++)
             {
-                treeToPutThisGalIn = search_index(index[l], listEquals);
-                addGalToTree(&new_trees, treeToPutThisGalIn, theseGtrees[i]->galaxies[l]);
+                treeToPutThisGalIn = search_branch(index[l], listEquals);
+                add_gal_to_tree(&new_trees, treeToPutThisGalIn, theseGtrees[i]->galaxies[l]);
             }    
 
-            addTrees(&theseNewGtrees, &numberNewGtrees, new_trees, sizeListEquals);        
+            reattribute_localID(new_trees, sizeListEquals);
+            add_trees(&theseNewGtrees, &numberNewGtrees, new_trees, sizeListEquals);        
             
             for(int m=0; m<sizeListEquals; m++)
             {
@@ -99,7 +104,48 @@ double cutandresort(gtree_t **theseGtrees, int numGtrees, int outSnap, gtree_t *
     return numberNewGtrees;
 }
 
-int getNumberOfRoot(gtree_t *thisGtree, int outSnap)
+int search_index(int *arrayToSearch, int value)
+{
+    int count = 0;
+    while(arrayToSearch[count] != value)
+        count++;
+
+    return count;
+}      
+
+void reattribute_localID(gtree_t **thisGtrees, int numberTrees)
+{
+    int *tmpArray = NULL;
+
+    for(int i=0; i<numberTrees; i++)
+    {
+        int *ptr_tmp = realloc(tmpArray, sizeof(int) * thisGtrees[i]->numGal);
+        if(ptr_tmp == NULL)
+        {
+            fprintf(stderr, "realloc failed, exiting !\n");
+            free(tmpArray);
+            exit(EXIT_FAILURE);
+        }
+        else
+            tmpArray = ptr_tmp;
+
+        for(int j=0; j<thisGtrees[i]->numGal; j++)
+            tmpArray[j] = thisGtrees[i]->galaxies[j].localID;
+        
+        for(int j=0; j<thisGtrees[i]->numGal-1; j++)
+        {
+            (thisGtrees[i]->galaxies+j)->localID = search_index(tmpArray, thisGtrees[i]->galaxies[j].localID);
+            (thisGtrees[i]->galaxies+j)->localDescID = search_index(tmpArray, thisGtrees[i]->galaxies[j].localDescID);
+        }
+
+        (thisGtrees[i]->galaxies+thisGtrees[i]->numGal-1)->localID = search_index(tmpArray, thisGtrees[i]->galaxies[thisGtrees[i]->numGal-1].localID);
+        (thisGtrees[i]->galaxies+thisGtrees[i]->numGal-1)->localDescID = -1;
+       }
+       
+       free(tmpArray);
+}
+
+int get_number_of_root(gtree_t *thisGtree, int outSnap)
 {
     int numberOfRoot = 0;
     int i = 0;
@@ -132,17 +178,17 @@ void add_index(int ***listEquals, int *sizeListEquals, int index)
     (*listEquals)[*sizeListEquals-1][1] = index;
 }
 
-int search_index(int index, int **listEquals)
+int search_branch(int index, int **listEquals)
 {
     int wantedList = 0;
 
-    while(isNotInThisList(index, listEquals[wantedList]))
+    while(is_not_in_this_list(index, listEquals[wantedList]))
         wantedList++;
     
     return wantedList;
 }
 
-int isNotInThisList(int index, int *thisList)
+int is_not_in_this_list(int index, int *thisList)
 {
     int isNot = 1;
     for(int i=1; i<thisList[0]+1; i++)
@@ -153,7 +199,7 @@ int isNotInThisList(int index, int *thisList)
 }
 
 // merge two lists in the listEquals, free the second list and move the list with higher index accordingly
-void mergeLists(int ***listEquals, int *sizeListEquals, int listOne, int listTwo)
+void merge_lists(int ***listEquals, int *sizeListEquals, int listOne, int listTwo)
 {
     int **theseLists = *listEquals;
     int *ptr_tmp = NULL; 
@@ -182,7 +228,7 @@ void mergeLists(int ***listEquals, int *sizeListEquals, int listOne, int listTwo
     (*sizeListEquals)--; 
 }
 
-void addGalToTree(gtree_t ***theseGtree, int position, gal_t thisGal)
+void add_gal_to_tree(gtree_t ***theseGtree, int position, gal_t thisGal)
 {
     gtree_t *thisGtree = (*theseGtree)[position];
     
@@ -195,7 +241,7 @@ void addGalToTree(gtree_t ***theseGtree, int position, gal_t thisGal)
     thisGtree->galaxies[i] = thisGal; //careful, both stellarmasshistory point to the same data
 }
 
-void addTrees(gtree_t ***theseNewGtrees, int *numberNewGtrees, gtree_t **new_trees, int sizeListEquals)
+void add_trees(gtree_t ***theseNewGtrees, int *numberNewGtrees, gtree_t **new_trees, int sizeListEquals)
 {
     gtree_t **localNewGtree = *theseNewGtrees;
 

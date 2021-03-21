@@ -659,6 +659,7 @@ void compute_ionization_field(confObj_t simParam, grid_t *thisGrid, photIonlist_
     /* -------------------------------------------------------- */
     /* save mean mfp of ionization field                        */
     /* -------------------------------------------------------- */ 
+        
     double phys_boxsize = simParam->box_size/(simParam->h*(1.+simParam->redshift));
     if(specie == 0)
     {
@@ -681,6 +682,7 @@ void compute_ionization_field(confObj_t simParam, grid_t *thisGrid, photIonlist_
     /* -------------------------------------------------------- */
     /* apply web model                                          */
     /* -------------------------------------------------------- */ 
+    
     if(simParam->use_web_model == 1 && specie == 0)
     {        
         if(thisRank==0) printf("\n Apply web model...");
@@ -690,7 +692,7 @@ void compute_ionization_field(confObj_t simParam, grid_t *thisGrid, photIonlist_
     }else{
         copy_grid_array(Xion_tmp, Xion, thisGrid);
     }
-
+    
     map_bubbles_to_nrec(Xion_tmp, cum_nrec, thisGrid);
     
     /* -------------------------------------------------------- */
@@ -700,7 +702,7 @@ void compute_ionization_field(confObj_t simParam, grid_t *thisGrid, photIonlist_
     {
         adapt_HeII_to_HeIII(thisGrid);
     }
-    
+        
     /* -------------------------------------------------------- */
     /* deallocation of arrays                                   */
     /* -------------------------------------------------------- */

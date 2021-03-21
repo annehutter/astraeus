@@ -59,6 +59,9 @@ dconfObj_new(parse_ini_t ini)
                ini, "boxsize", "Simulation");
     config->inv_boxsize = 1./config->boxsize;
     
+    getFromIni(&(config->memoryIntensive), parse_ini_get_int32,
+               ini, "fastButMemoryIntensive", "Simulation");
+    
     getFromIni(&(config->omega_m), parse_ini_get_double,
                ini, "OM0", "Cosmology");
     getFromIni(&(config->omega_b), parse_ini_get_double,
@@ -67,6 +70,22 @@ dconfObj_new(parse_ini_t ini)
                ini, "OL0", "Cosmology");
     getFromIni(&(config->hubble_h), parse_ini_get_double,
                ini, "HUBBLE_CONSTANT", "Cosmology");
+    
+    config->dt_model = 0;
+    config->dt_rescaleFactor = 1.;
+    config->dt_deltaTimeInMyr = 0.;
+    checkFromIni(&(config->dt_model), parse_ini_get_int32,
+               ini, "timestepModel", "StarFormation");
+    if(config->dt_model == 1)
+    {
+      getFromIni(&(config->dt_rescaleFactor), parse_ini_get_float,
+               ini, "timestepModel1_factorRescale", "StarFormation");
+    }
+    if(config->dt_model > 1)
+    {
+      getFromIni(&(config->dt_deltaTimeInMyr), parse_ini_get_float,
+               ini, "timestepModel2_deltaTimeInMyr", "StarFormation");
+    }
     
     getFromIni(&(config->FS), parse_ini_get_double,
                ini, "starFormationEfficiency", "StarFormation");
@@ -128,13 +147,9 @@ dconfObj_new(parse_ini_t ini)
     config->reion_model = -1;
     if(config->reion == 1)
     {
-      if(strcmp(reion_model, "GNEDIN") == 0)
+      if(strcmp(reion_model, "LOCAL") == 0)
       {
         config->reion_model = 1;
-      }
-      else if(strcmp(reion_model, "LOCAL") == 0)
-      {
-        config->reion_model = 2;
       }
       else
       {
@@ -218,6 +233,9 @@ dconfObj_new(parse_ini_t ini)
                ini, "fesc", "fescSN");
     }
     
+    config->outputType = 1;
+    getFromIni(&(config->outputType), parse_ini_get_int32,
+               ini, "type", "Output");
     getFromIni(&(config->numSnapsToWrite), parse_ini_get_int32,
                ini, "numSnapsToWrite", "Output");
     getFromIni(&(config->horizontalOutput), parse_ini_get_int32,

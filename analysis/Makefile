@@ -18,15 +18,30 @@ SOURCES := 	./src/main.c \
 		./src/statistics_evolution.c \
 		./src/selection_evolution.c \
 		./src/sort.c \
-		./src/communicate_mpi.c \
 		./src/tree_correct.c \
-		./src/get_grid_properties.c
+		./src/get_grid_properties.c \
+		./src/communicate_mpi.c \
+		./src/get_further_derived_properties.c \
+		./src/SNfeedback.c \
+		./src/ion_emissivity.c \
+		./src/smoothing_grid.c \
+		./src/map_gal_to_grid.c \
+		./src/find_median.c \
+		./src/statistics_median.c \
+		./src/selection_median.c \
+		./src/statistics_analytic.c \
+		./src/selection_analytic.c \
+		./src/numdens_analytic.c \
+		./src/statistics_evolution_analytic.c \
+		./src/selection_evolution_analytic.c \
+		./src/output_lists.c
 		
 OBJECTS := $(SOURCES:.c=.o)
 DOBJECTS := $(SOURCES:.c=.d)
 EXECUTABLE := analyse
 
 USE-MPI=YES
+# GCC-DEBUG=YES
 
 include common.mk
 

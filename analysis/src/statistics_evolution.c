@@ -14,7 +14,7 @@
 #include "statistics.h"
 #include "statistics_evolution.h"
 
-int get_numBins_for_bins(int numGal, int currSnap, float *binProperty1, int binsInLog1, int binsPerMag1, int containsHistories1)
+int get_numBins_for_bins(int numGal, int currSnap, double *binProperty1, int binsInLog1, int binsPerMag1, int containsHistories1)
 {
   int currSnap1 = 0;
   if(containsHistories1 == 1)
@@ -36,7 +36,7 @@ int get_numBins_for_bins(int numGal, int currSnap, float *binProperty1, int bins
   return numBins1;
 }
 
-int get_minIndex_for_bins(int numGal, int currSnap, float *binProperty1, int binsInLog1, int binsPerMag1, int containsHistories1)
+int get_minIndex_for_bins(int numGal, int currSnap, double *binProperty1, int binsInLog1, int binsPerMag1, int containsHistories1)
 {
   int currSnap1 = 0;
   if(containsHistories1 == 1)
@@ -58,7 +58,7 @@ int get_minIndex_for_bins(int numGal, int currSnap, float *binProperty1, int bin
   return minIndex1;
 }
 
-float *get_values_for_bins(int numGal, int currSnap, float *binProperty1, int binsInLog1, int binsPerMag1, int containsHistories1)
+float *get_values_for_bins(int numGal, int currSnap, double *binProperty1, int binsInLog1, int binsPerMag1, int containsHistories1)
 {
   int currSnap1 = 0;
   if(containsHistories1 == 1)
@@ -118,7 +118,7 @@ float *get_values_for_fixed_bins(float minValue1, float maxValue1, int binsInLog
   return values1;
 }
 
-void calc_1D_histogram_evolution(int numGal, float *property, int currSnap, float *binProperty1, int binsInLog1, int binsPerMag1, int minIndex1, int containsHistories1, int numBins1, int numSnaps, float **histogram, int **histogramNum)
+void calc_1D_histogram_evolution(int numGal, double *property, int currSnap, double *binProperty1, int binsInLog1, int binsPerMag1, int minIndex1, int containsHistories1, int numBins1, int numSnaps, float **histogram, int **histogramNum)
 {
   int currSnap1 = 0;
   if(containsHistories1 == 1)

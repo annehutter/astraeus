@@ -40,10 +40,38 @@ outgalsnap_t *initOutGalSnap()
   newOutGal->zreion = 0.;  
   newOutGal->photHI_bg = 0.;  
 
-  for(int i=0; i<73; i++)
+  for(int i=0; i<OUTPUTSNAPNUMBER; i++)
     newOutGal->stellarmasshistory[i] = 0.;
 
   return newOutGal;
+}
+
+void initOutGalSnapWithoutAllocation(outgalsnap_t *newOutGal)
+{
+  newOutGal->scalefactor = -1.;
+  
+  for(int i=0; i<3; i++)
+  {
+    newOutGal->pos[i] = 0.;
+    newOutGal->vel[i] = 0.;
+  }
+  newOutGal->Mvir = 0.;
+  newOutGal->Mvir_prog = 0.;
+  newOutGal->Rvir = 0.;
+  newOutGal->velDisp = 0.;
+  newOutGal->velMax = 0.;
+  newOutGal->spin = 0.;
+  newOutGal->scalefactorLastMajorMerger = 0.;
+  newOutGal->Mgas = 0.;
+  newOutGal->MgasIni = 0.;
+  newOutGal->Mstar = 0.;
+  newOutGal->feff = 0.;  
+  newOutGal->fg = 0.;
+  newOutGal->zreion = 0.;  
+  newOutGal->photHI_bg = 0.;  
+
+  for(int i=0; i<OUTPUTSNAPNUMBER; i++)
+    newOutGal->stellarmasshistory[i] = 0.;
 }
 
 outgalsnap_t *initOutGalList(int numGal)
@@ -79,7 +107,7 @@ outgalsnap_t *initOutGalList(int numGal)
     newOutGalList[gal].zreion = 0.;
     newOutGalList[gal].photHI_bg = 0.;
 
-    for(int i=0; i<73; i++)
+    for(int i=0; i<OUTPUTSNAPNUMBER; i++)
       newOutGalList[gal].stellarmasshistory[i] = 0.;
 
   }

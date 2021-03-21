@@ -151,6 +151,14 @@ void initialize_array_double(int nbins, double *array, double value)
     }
 }
 
+void initialize_array_float_pointer(int nbins, float **array)
+{
+    for(int i=0; i<nbins; i++)
+    {
+        array[i] = NULL;
+    }
+}
+
 /* ------------------------------------------------------------*/
 /* ARRAY ALLOCATION                                            */
 /* ------------------------------------------------------------*/
@@ -224,6 +232,19 @@ double* allocate_array_double(int length, char *arrayname)
         exit(EXIT_FAILURE);
     }
     initialize_array_double(length, tmp, 0.);
+    return tmp;
+}
+
+
+float** allocate_array_float_pointer(int length, char *arrayname)
+{
+    float **tmp = malloc(length * sizeof(float*));
+    if(tmp == NULL)
+    {
+        fprintf(stderr, "allocate_array_float_pointer: could not allocate array %s\n", arrayname);
+        exit(EXIT_FAILURE);
+    }
+    initialize_array_float_pointer(length, tmp);
     return tmp;
 }
 

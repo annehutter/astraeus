@@ -118,6 +118,14 @@ int cifog_step(confObj_t simParam, grid_t *grid, fftw_complex *nion, fftw_comple
     read_update_nion(simParam, nion, grid);
     if(myRank==0) printf("done\n+++\n");
     
+//     //write nion field to file
+//     char nionFile[MAXLENGTH];
+//     for(int i=0; i<MAXLENGTH; i++) nionFile[i] = '\0';
+//     sprintf(nionFile, "%s_%02d", "/net/eos/data/users/hutter/test_delphi/nion.out", cycle + cycle_offset);
+//     if(myRank==0) printf("\n++++\nwriting nion field to file %s ... ", nionFile);
+//     save_to_file(grid->nion, grid, nionFile);
+//     if(myRank==0) printf("done\n+++\n");
+    
     if(simParam->solve_He == 1)
     {
         if(myRank==0) printf("\n++++\nReading sources/nion file for snap = %d... ", snap);

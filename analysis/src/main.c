@@ -6,6 +6,7 @@
 #include <time.h>
 
 #ifdef MPI
+#include <fftw3-mpi.h>
 #include <mpi.h>
 #endif
 
@@ -45,10 +46,17 @@ int main(int argc, char* argv[])
         simParam->size = size;
         simParam->thisRank = thisRank;
 
+#ifdef MPI
+        if(simParam->memoryIntensive == 0)
+          fftw_mpi_init();
+#endif
         /* RUN analysis */
         analysis(simParam, thisRank, size);
         
 #ifdef MPI
+        if(simParam->memoryIntensive == 0)
+          fftw_mpi_cleanup();
+        
 	MPI_Finalize();
 #endif
 	

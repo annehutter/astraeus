@@ -1,6 +1,8 @@
 #ifndef READ_TREES_H
 #define READ_TREES_H
 
+void print_tree(tree_t *thisTree);
+
 tree_t *read_tree(FILE *f);
 int32_t read_trees_in_file(char *fileName, tree_t ***thisTreeList, int offset);
 

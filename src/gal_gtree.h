@@ -21,6 +21,7 @@ typedef struct{
   float scalefactorLastMajorMerger;
   float Mgas;
   float MgasIni;
+  float fracMgasMer;
   float Mstar;
   
   float feff;

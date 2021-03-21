@@ -33,12 +33,16 @@ struct dconfObj_struct {
     int            gridsize;
     double         boxsize;
     double         inv_boxsize;
+    int            memoryIntensive;
     
     double         omega_m;
     double         omega_b;
     double         omega_l;
     double         hubble_h;
     
+    int            dt_model;
+    float          dt_rescaleFactor;
+    float          dt_deltaTimeInMyr;
     double         FS;
     float          *timeSnaps;
     
@@ -64,6 +68,7 @@ struct dconfObj_struct {
     double         fescLow;
     double         fescHigh;
     
+    int            outputType;
     int            horizontalOutput;
     int            numSnapsToWrite;
     int            *snapList;

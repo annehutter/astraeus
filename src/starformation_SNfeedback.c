@@ -23,12 +23,13 @@
 /* SUPERNOVA FEEDBACK                                                  */
 /*---------------------------------------------------------------------*/
 
-float calc_SNejection_efficiency(gal_t *thisGal, dconfObj_t simParam, float Mgas)
+float calc_SNejection_efficiency(gal_t *thisGal, dconfObj_t simParam, float corrFactorTimeStep)
 {
   float G = 4.302e-6; // kpc Msol^-1 (km/s)^2
   float vc = sqrt(G * thisGal->Mvir / (thisGal->Rvir * thisGal->scalefactor));   // in km s^-1
-  float fw = simParam->FW;
+  float fw = simParam->FW / (1. + (corrFactorTimeStep - 1.) * thisGal->fracMgasMer);
   float SNejection_efficiency = 0.;
+  float Mgas = thisGal->MgasIni;
   
   if(simParam->delayedSNfeedback == 1)
   {

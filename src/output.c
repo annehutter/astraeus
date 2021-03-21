@@ -158,13 +158,34 @@ void write_treelist(dconfObj_t simParam, int thisRank, int numGtree, gtree_t **t
       printf("Error opening file to write the trees\n");
     fwrite(&numGtree, sizeof(int32_t), 1, file);
 
-    for(int i=0; i<numGtree; i++)
+    if(simParam->outputType == 2)
     {
-        outTree = initOutGtree(thisGtreeList[i]->numGal);
-        copy_tree_to_outgtree(thisGtreeList[i], outTree);
-        fwrite(&(outTree->numGal), sizeof(int32_t), 1, file);
-        fwrite(outTree->outgalaxies, sizeof(outgal_t), outTree->numGal, file);
-        deallocate_outgtree(outTree);
+      for(int i=0; i<numGtree; i++)
+      {
+          outTree = initOutGtree(thisGtreeList[i]->numGal);
+          copy_tree_to_outgtree(thisGtreeList[i], outTree);
+          fwrite(&(outTree->numGal), sizeof(int32_t), 1, file);
+          deallocate_outgtree(outTree);
+      }
+      
+      for(int i=0; i<numGtree; i++)
+      {
+          outTree = initOutGtree(thisGtreeList[i]->numGal);
+          copy_tree_to_outgtree(thisGtreeList[i], outTree);
+          fwrite(outTree->outgalaxies, sizeof(outgal_t), outTree->numGal, file);
+          deallocate_outgtree(outTree);
+      }
+    }
+    else
+    {
+      for(int i=0; i<numGtree; i++)
+      {
+          outTree = initOutGtree(thisGtreeList[i]->numGal);
+          copy_tree_to_outgtree(thisGtreeList[i], outTree);
+          fwrite(&(outTree->numGal), sizeof(int32_t), 1, file);
+          fwrite(outTree->outgalaxies, sizeof(outgal_t), outTree->numGal, file);
+          deallocate_outgtree(outTree);
+      }
     }
 
     fclose(file); 
@@ -180,7 +201,7 @@ void write_galaxies_of_snap_to_file(dconfObj_t simParam, int snap, int numOutGal
 
     /* Create the outgalsnap_t type for MPI */
     MPI_Datatype OUTGALSNAP_T;
-    MPI_Type_contiguous(94, MPI_FLOAT, &OUTGALSNAP_T);
+    MPI_Type_contiguous(OUTPUTSNAPNUMBER+21, MPI_FLOAT, &OUTGALSNAP_T);
     MPI_Type_commit(&OUTGALSNAP_T);
 #else
     FILE *file;
@@ -201,7 +222,7 @@ void write_galaxies_of_snap_to_file(dconfObj_t simParam, int snap, int numOutGal
     file = fopen(thisOutfileName, "wb");
     if(file == NULL)
       printf("Error opening file containing the number of galaxies");
-    fwrite(outGalList, sizeof(outgal_t), numOutGal, file);
+    fwrite(outGalList, sizeof(outgalsnap_t), numOutGal, file);
     fclose(file);
 #endif
 

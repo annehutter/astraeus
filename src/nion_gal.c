@@ -61,7 +61,7 @@ fftw_complex *map_galnion_to_grid(nion_t *thisNion, domain_t *thisDomain, int me
 #ifdef MPI
     distribute_nion_to_processors(thisNion, thisDomain);
 #endif
-    map_nion_to_pos_on_grid(thisNion, nion, nbins, local_0_start, thisDomain->thisRank);
+    map_nion_to_pos_on_grid(thisNion, nion, nbins, local_n0, local_0_start, thisDomain->thisRank);
   }
 
 #ifdef MPI
@@ -72,21 +72,33 @@ fftw_complex *map_galnion_to_grid(nion_t *thisNion, domain_t *thisDomain, int me
 }
 
 /* MAPPING FUNCTION TO GRID */
-void map_nion_to_pos_on_grid(nion_t *thisNion, fftw_complex *nion, int nbins, ptrdiff_t local_0_start, int thisRank)
+void map_nion_to_pos_on_grid(nion_t *thisNion, fftw_complex *nion, int nbins, ptrdiff_t local_n0, ptrdiff_t local_0_start, int thisRank)
 {
   int32_t numGal = thisNion->numGal;
   double *nionGal = thisNion->nion;
   int32_t *posGal = thisNion->pos;
   
+  for(int i=0; i<local_n0; i++)
+  {
+    for(int j=0; j<nbins; j++)
+    {
+      for(int k=0; k<nbins; k++)
+      {
+        nion[i*nbins*nbins+j*nbins+k] = 0. + 0.*I;
+      }
+    }
+  }
+  
   for(int gal=0; gal<numGal; gal++)
   {
-    if(posGal[gal] - local_0_start*nbins*nbins < 0 || posGal[gal] - local_0_start*nbins*nbins > nbins*nbins*nbins)
+    if(posGal[gal] - local_0_start*nbins*nbins < 0 || posGal[gal] - local_0_start*nbins*nbins > local_n0*nbins*nbins)
     {
+      printf("rank %d: gal = %d: %d < pos = %d < %d\n", thisRank, gal, local_0_start*nbins*nbins, posGal[gal], (local_0_start + local_n0)*nbins*nbins);
       fprintf(stderr, "Galaxy position is not within domain. Check your mapping!\n");
       exit(EXIT_FAILURE);
     }
 
-    nion[posGal[gal] - local_0_start*nbins*nbins] = nionGal[gal] + 0.*I;
+    nion[posGal[gal] - local_0_start*nbins*nbins] += nionGal[gal] + 0.*I;
   }
 }
 
@@ -145,7 +157,7 @@ void distribute_nion_to_processors(nion_t *thisNion, domain_t *thisDomain)
   int32_t *toRecvPos = NULL;
     
   /* SORTING GALAXIES ACCORDING TO RANKS WHERE THEY ARE SENT TO */
-  sort_nion(thisNion);
+  sort_nion(thisNion, thisDomain->thisRank);
  
   /* NUMBER OF GALAXIES ON RANK TO SEND TO OTHER RANKS */
   int32_t *numGalToRanks = get_nion_numbers(thisNion, size);
@@ -153,8 +165,8 @@ void distribute_nion_to_processors(nion_t *thisNion, domain_t *thisDomain)
   /* NUMBER OF GALAXIES THAT ARE RECEIVED BY THE ALL RANKS ON THIS RANK */
   int32_t *numGalOnThisRank = allocate_array_int32_t(size, "numGalOnThisRank");
   
-  for(int i=0; i<size; i++)
-    printf("rank %d: sending %d galaxies to rank %d\n", thisDomain->thisRank, numGalToRanks[i], i);
+//   for(int i=0; i<size; i++)
+//     printf("rank %d: sending %d galaxies to rank %d\n", thisDomain->thisRank, numGalToRanks[i], i);
   
   /* copy NION & POS to temporary arrays */
   toSendNion = copy_nion(thisNion);
@@ -182,12 +194,15 @@ void distribute_nion_to_processors(nion_t *thisNion, domain_t *thisDomain)
   for(int i=0; i<size; i++)
   {
     sum += numGalOnThisRank[i];
-    printf("rank %d: received %d galaxies from rank %d\n", thisDomain->thisRank, numGalOnThisRank[i], i);
+//     printf("rank %d: received %d galaxies from rank %d\n", thisDomain->thisRank, numGalOnThisRank[i], i);
   }
   thisNion->numGal = sum;
   thisNion->numGalWritten = sum;
   
-  printf("rank %d: total number of galaxies = %d and %d\n", thisDomain->thisRank, thisNion->numGal, thisNion->numGalWritten);
+  double sumDouble = get_mean_nion(thisNion);
+  if(thisDomain->thisRank == 0) printf("nion = %e\n", sumDouble);
+  
+//   printf("rank %d: total number of galaxies = %d and %d\n", thisDomain->thisRank, thisNion->numGal, thisNion->numGalWritten);
   
   free(numGalToRanks);
   free(numGalOnThisRank);
@@ -195,7 +210,7 @@ void distribute_nion_to_processors(nion_t *thisNion, domain_t *thisDomain)
 #endif
 
 /* SORT ARRAY ACCORDING TO RANK WHERE TO SEND IT */
-void sort_nion(nion_t *thisNion)
+void sort_nion(nion_t *thisNion, int thisRank)
 {
   int32_t numGal = thisNion->numGal;
   int32_t *indexArray = allocate_array_int32_t(numGal, "indexArray");
@@ -204,8 +219,22 @@ void sort_nion(nion_t *thisNion)
   
   for(int gal=0; gal<numGal; gal++) indexArray[gal] = gal;
 
+//   if(thisRank == 0)
+//   {
+//     printf("before: ");
+//     for(int gal=0; gal<numGal; gal++) printf("%d\t", indexArray[gal]);
+//     printf("\n");
+//   }
+  
   quicksort(thisNion->rank, 0, numGal-1, indexArray);
 
+//   if(thisRank == 0)
+//   {
+//     printf("after: ");
+//     for(int gal=0; gal<numGal; gal++) printf("%d\t", indexArray[gal]);
+//     printf("\n");
+//   }
+  
   for(int gal=0; gal<numGal; gal++)
   {
     posArray[gal] = thisNion->pos[indexArray[gal]];

@@ -12,6 +12,21 @@
 #include "halo_tree.h"
 #include "read_trees.h"
 
+
+void print_tree(tree_t *thisTree)
+{
+  int numHalos = thisTree->numHalos;
+  halo_t thisHalo;
+  
+  printf("This tree has %d halos.\n", numHalos);
+  for(int halo=0; halo<numHalos; halo++)
+  {
+    thisHalo = thisTree->halos[halo];
+    
+    printf("halo %d: z = %f\t snap = %d\t Mvir = %e\t ID = %ld\t descID = %ld\t localID = %d\t localDescID = %d\n", halo, 1./thisHalo.scalefactor-1., thisHalo.snapnumber, thisHalo.Mvir, thisHalo.ID, thisHalo.descID, thisHalo.localID, thisHalo.localDescID);
+  }
+}
+
 tree_t *read_tree(FILE *f)
 {
   tree_t *newTree = NULL;

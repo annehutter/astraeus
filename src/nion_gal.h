@@ -9,7 +9,7 @@
 fftw_complex *map_galnion_to_grid(nion_t *thisNion, domain_t *thisDomain, int memoryIntensive);
 
 /* MAPPING FUNCTION TO GRID */
-void map_nion_to_pos_on_grid(nion_t *thisNion, fftw_complex *nion, int nbins, ptrdiff_t local_0_start, int thisRank);
+void map_nion_to_pos_on_grid(nion_t *thisNion, fftw_complex *nion, int nbins, ptrdiff_t local_n0, ptrdiff_t local_0_start, int thisRank);
 
 /* MEMORY INTENSIVE MAPPING FUNCTION TO GRID */
 void map_nion_to_pos_on_grid_memintensive(nion_t *thisNion, fftw_complex *nion, int nbins, ptrdiff_t local_n0, ptrdiff_t local_0_start, int thisRank);
@@ -26,7 +26,7 @@ void distribute_nion_to_processors(nion_t *thisNion, domain_t *thisDomain);
 #endif
 
 /* SORT ARRAY ACCORDING TO RANK WHERE TO SEND IT */
-void sort_nion(nion_t *thisNion);
+void sort_nion(nion_t *thisNion, int thisRank);
 
 /* GET HOW MANY GALAXIES HAVE TO BE SENT TO EACH RANK (works only on a sorted array!) */
 int32_t *get_nion_numbers(nion_t *thisNion, int32_t size);

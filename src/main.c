@@ -13,6 +13,9 @@
 #include <fftw3.h>
 #endif
 
+#include "cifog/confObj.h"
+#include "cifog/grid.h"
+
 #include "utils.h"
 #include "dconfObj.h"
 #include "gal_gtree.h"
@@ -54,7 +57,7 @@ int main(int argc, char *argv[])
   if(thisRank==0)
     copy_iniFile_executable(simParam->outFileName);
 
-  run_delphi(simParam, thisRank, size);
+  run_astraeus(simParam, thisRank, size);
   
   dconfObj_del(&simParam);
   

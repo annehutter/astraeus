@@ -8,6 +8,7 @@
 #include "dconfObj.h"
 #include "gal_gtree.h"
 #include "starformation_SNfeedback.h"
+#include "timestep_model.h"
 #include "fesc.h"
 
 double get_fesc(gal_t *thisGal, dconfObj_t simParam)
@@ -66,7 +67,8 @@ double get_fesc_MHdec(gal_t *thisGal, dconfObj_t simParam)
 
 double get_fesc_SN(gal_t *thisGal, dconfObj_t simParam)
 {
-  double fej = calc_SNejection_efficiency(thisGal, simParam, thisGal->MgasIni);
+  float corrFactorTimeStep = get_corrFactorTimeStep(simParam, thisGal->snapnumber);
+  double fej = calc_SNejection_efficiency(thisGal, simParam, corrFactorTimeStep);
   double feff = thisGal->feff;
   
   double fesc = 1.;

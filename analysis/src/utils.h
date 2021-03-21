@@ -33,6 +33,8 @@ void initialize_array_long_int(int nbins, long int *array, int value);
 void initialize_array_float(int nbins, float *array, float value);
 void initialize_array_double(int nbins, double *array, double value);
 
+void initialize_array_float_pointer(int nbins, float **array);
+
 /* ------------------------------------------------------------*/
 /* ARRAY ALLOCATION                                            */
 /* ------------------------------------------------------------*/
@@ -42,6 +44,8 @@ int32_t* allocate_array_int32_t(int length, char *arrayname);
 long int* allocate_array_long_int(int length, char *arrayname);
 float* allocate_array_float(int length, char *arrayname);
 double* allocate_array_double(int length, char *arrayname);
+
+float** allocate_array_float_pointer(int length, char *arrayname);
 
 /* ------------------------------------------------------------*/
 /* FREE ALLOCATED MEMORY                                       */

@@ -1,7 +1,7 @@
 ASTRAEUS
 ========
 
-Home of the semi-analytical / semi-numerical galaxy evolution and reionization code ASTRAEUS (semi-numerical rAdiative tranSfer coupling of galaxy formaTion and Reionization in n-body dArk mattEr simUlationS)
+Home of the semi-analytical / semi-numerical galaxy evolution and reionization code ASTRAEUS (semi-numerical rAdiative tranSfer coupling of galaxy formaTion and Reionization in n-body dArk mattEr simUlationS). The underlying model is described in `Hutter at al. (2021) <https://ui.adsabs.harvard.edu/abs/2021MNRAS.tmp..610H/abstract>`__. Suggestions for improvements are very welcome and can be sent to `this email address<a.k.hutter@rug.nl>`__.
 
 When you should use this code
 =============================
@@ -10,6 +10,8 @@ If you want to compute the self-consistent evolution of high-redshift galaxy pro
 
 - merger trees generated with ``cutNresort``
 - (optional) cosmological box with DM/gas overdensities **or** gas densities (grid); if none are given, DM/gas density is assumed to be homogeneous.
+
+Note that ASTRAEUS can also be run on analytical merger trees when reionization is switched off (see below).
 
 Why should you use it
 =====================
@@ -22,7 +24,7 @@ Source files
 
 The astraeus directory constains the Makefile as well as the executable ``astraeus`` after the source code in the `src <https://github.com/annehutter/astraeus/src>`__ directory has been compiled.
 
-The directory `analysis <https://github.com/annehutter/astraeus/analysis>`__ constains an analysis code that runs on the ``ASTRAEUS`` tree output files. 
+The directory `analysis <https://github.com/annehutter/astraeus/analysis>`__ constains an analysis code that runs on the ASTRAEUS tree output files. 
 
 Installation
 ============
@@ -107,6 +109,9 @@ Parameter File
 
 **[StarFormation]**
 
+- ``timestepModel`` = *[integer, optional]* flag to use either the default model with a constant fraction of gas turned into stars (as described in paper I) [value: 0], when comparing a simulation with a different time steps width but same spacing to a simulation using the default model [value: 1], or a model that assumes a constant star formation rate and is time step independent [value: 2]; if not defined, the default model is used
+- ``timestepModel1_rescaleFactor`` = *[float, optional]* factor with which time steps of the default simulation needs to be multiplied with to obtain the time steps of the simulation that is compared to the default simulation
+- ``timestepModel2_deltaTimeInMyr`` = *[float, optional]* time in Myr over which a fraction ``starFormationEfficiency`` of gas is turned into stars
 - ``starFormationEfficiency`` = *[float]* maximum star formation efficiency [typical values: 0.01-0.03]
 
 **[SNfeedback]**
@@ -143,6 +148,7 @@ Parameter File
 
 **[Output]**
 
+- ``type`` = *[integer]* flag to determine the format of the vertical outputs or tree files: number of trees, number of galaxies in tree 1, galaxies in tree 1, number of galaxies in tree 2, galaxies in tree 2, ... [value: 1]; number of trees, number of galaxies in tree 1, number of galaxies in tree 2, ..., galaxies in tree 1, galaxies in tree 2, ... [value: 2]
 - ``horizontalOutput`` = *[integer]* write [value: 1] or do not write [value: 0] horizontal outputs, i.e. properties of all galaxies in a snapshot
 - ``numSnapsToWrite`` = *[integer]* number of snapshots for which horizontal outputs should be written
 - ``snapList`` = *[list of integers]* snapshot numbers for which horizontal outputs should be written [example: 12 25 34 38 42 46 51 54 56 58 62 64 69]
@@ -153,4 +159,4 @@ Parameter File
 Analysis
 ========
 
-The tree outputs generated with ``ASTRAEUS`` can be analysed using our analysis code `here <https://github.com/annehutter/astraeus/analysis>`__.
+The tree outputs generated with ``ASTRAEUS`` can be analysed using our analysis code `here <https://github.com/annehutter/astraeus/tree/master/analysis>`__.

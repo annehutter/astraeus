@@ -21,7 +21,7 @@ typedef struct{
   float fg;
   float zreion;
   float photHI_bg;
-  float stellarmasshistory[73];
+  float stellarmasshistory[OUTPUTSNAPNUMBER];
 }outgalsnap_t;
 
 
@@ -62,6 +62,7 @@ typedef struct{
 /*-------------------------------------------------------*/
 
 outgalsnap_t *initOutGalSnap();
+void initOutGalSnapWithoutAllocation(outgalsnap_t *newOutGal);
 outgalsnap_t *initOutGalList(int numGal);
 void deallocate_outgalsnap(outgalsnap_t *thisOutGal);
 

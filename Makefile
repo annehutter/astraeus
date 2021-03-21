@@ -23,6 +23,9 @@ SOURCES := 	./src/main.c \
 		./src/starformation_SNfeedback.c \
 		./src/ion_emissivity.c \
 		./src/fesc.c \
+		./src/comm_gal_grid_struct.c \
+		./src/comm_gal_grid.c \
+		./src/timestep_model.c \
 		./src/check_cifogParam.c \
 		./src/cifog/confObj.c \
 		./src/cifog/grid.c \

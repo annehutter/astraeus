@@ -31,8 +31,9 @@ void copy_halo_to_gal(halo_t *thisHalo, gal_t *thisGal)
   thisGal->spin = thisHalo->spin;
   thisGal->scalefactorLastMajorMerger = thisHalo->scalefactorLastMajorMerger;
   thisGal->Mgas = 0.;
-  thisGal->Mstar = 0.;
   thisGal->MgasIni = 0.;
+  thisGal->fracMgasMer = 0.;
+  thisGal->Mstar = 0.;
   
   thisGal->feff = 0.;
   thisGal->fg = 0.;

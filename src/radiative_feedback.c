@@ -40,9 +40,6 @@ float calc_radiative_feedback(gal_t *thisGal, gal_t *descGal, dconfObj_t simPara
         descGal->zreion = zreion;
       }
     }
-//     else if(descGal->zreion > 0.)
-//       printf("descGal: z = %e\t zreion = %e, thisGal: z = %e\t zreion = %e\n", 1./descGal->scalefactor-1., descGal->zreion, z, zreion);
-
     
     if(zreion > 0.)
     {

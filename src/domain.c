@@ -138,6 +138,9 @@ int calc_rank_from_pos(domain_t *thisDomain, double z)
     int rank = 0;
     int tmp = 0;
     
+    if(z_int >= thisDomain->nbins)
+        z_int = thisDomain->nbins - 1;
+    
     for(int i=0; i<thisDomain->size; i++)
     {
         tmp += thisDomain->local_n0_list[i];

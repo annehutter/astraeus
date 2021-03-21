@@ -5,7 +5,7 @@
 /* SUPERNOVA FEEDBACK                                                  */
 /*---------------------------------------------------------------------*/
 
-float calc_SNejection_efficiency(gal_t *thisGal, dconfObj_t simParam, float Mgas);
+float calc_SNejection_efficiency(gal_t *thisGal, dconfObj_t simParam, float corrFactorTimeStep);
 float get_SNenergy_current(gal_t *thisGal, float *SNenergy);
 float calc_SNenergy_past(gal_t *thisGal, float *SNenergy);
 

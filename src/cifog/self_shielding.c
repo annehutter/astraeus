@@ -472,7 +472,7 @@ void compute_web_ionfraction(grid_t *thisGrid, confObj_t simParam)
                 
                 //compute modified photHI
                 mod_photHI = ss_calc_modPhotHI(creal(thisGrid->igm_density[cell]), densSS);
-                
+                                  
                 //compute new XHII
                 thisGrid->XHII[cell] = ss_calc_XHII(creal(thisGrid->igm_density[cell])*mean_numdensity_H*correct_HeII*creal(thisGrid->igm_clump[cell]), mod_photHI*creal(thisGrid->photHI[cell]), temperature, simParam->Y) + 0.*I;
             }

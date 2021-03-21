@@ -6,10 +6,15 @@
 #include <assert.h>
 
 #ifdef MPI
+#include <fftw3-mpi.h>
 #include <mpi.h>
+#else
+#include <fftw3.h>
 #endif
 
 #include "utils.h"
+#include "dconfObj.h"
+#include "outgal.h"
 #include "sort.h"
 #include "get_grid_properties.h"
 #include "communicate_mpi.h"
@@ -18,15 +23,26 @@
 /* CREATING & SORTING ARRAY FOR SENDING */
 /*----------------------------------------------------------------*/
 
-int *create_rankArray_3Dgrid(int size, int numEntries, float *posIndex, int gridsize)
+int *create_rankArray_3Dgrid(int numEntries, double *posIndex, int gridsize)
 {
   int *rankArray = allocate_array_int(numEntries, "rankArray");
+#ifdef MPI
+  ptrdiff_t local_n0, local_0_start;
+  ptrdiff_t max_local_n0 = 0;
+
+  fftw_mpi_init();
+  fftw_mpi_local_size_3d(gridsize, gridsize, gridsize, MPI_COMM_WORLD, &local_n0, &local_0_start);
+  fftw_mpi_cleanup();
   
-  float factor = (float)size / (float)(gridsize*gridsize*gridsize);
+  MPI_Allreduce(&local_n0, &max_local_n0, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+    
   for(int i=0; i<numEntries; i++)
   {
-    rankArray[i] = ((int)(posIndex[i] * factor) < size ? (int)(posIndex[i] * factor) : size-1);
+    rankArray[i] = (int)(posIndex[i] / (max_local_n0*gridsize*gridsize));
+    if(posIndex[i] >= (rankArray[i] + 1) * max_local_n0 * gridsize * gridsize || (int)(posIndex[i]) >= gridsize*gridsize*gridsize)
+      printf("%d: %ld: rankArray = %d\t posIndex = %f\t (int)posIndex = %d\n", i, local_0_start/max_local_n0, rankArray[i], posIndex[i], (int)(posIndex[i]));
   }
+#endif
   
   return rankArray;
 }
@@ -82,27 +98,14 @@ double *create_sortedArray_double(int numEntries, double *thisArray, int *rankAr
   return sortedArray;
 }
 
-int32_t *create_numToSendToRanksArray(int size, int numEntries, int *rankArray, int *indexArray)
+int32_t *create_numToSendToRanksArray(int size, int numEntries, int *rankArray)
 {
   int32_t *numToSendToRanks = allocate_array_int32_t(size, "numToSendToRanks");
   
-  int counter = 0;
-  int rank = 0;
   for(int i=0; i<numEntries; i++)
   {
-//     if(i<3 || i>numEntries-3) printf("rankArray[%d] = %d\n", i, rankArray[i]);
-    if(rankArray[i] == rank)
-    {
-      counter++;
-    }
-    else
-    {
-      numToSendToRanks[rank] = counter;
-      counter = 1;
-      rank++;
-    }
+    numToSendToRanks[rankArray[i]]++;
   }
-  numToSendToRanks[rank] = counter;
   
   int sum = 0;
   for(int i=0; i<size; i++)
@@ -115,7 +118,7 @@ int32_t *create_numToSendToRanksArray(int size, int numEntries, int *rankArray, 
     printf("sum = %d\t numEntries = %d\n", sum, numEntries);
   }
   assert(sum == numEntries);
-  
+    
   return numToSendToRanks;
 }
 
@@ -135,9 +138,9 @@ int get_numEntries_numOnThisRank(int size, int32_t *numOnThisRank)
 /*----------------------------------------------------------------*/
 /*----------------------------------------------------------------*/
 
-float *create_resortedArray(int numEntries, float *sortedArray, int *indexArray)
+double *create_resortedArray(int numEntries, double *sortedArray, int *indexArray)
 {
-  float *resortedArray = allocate_array_float(numEntries, "resortedArray");
+  double *resortedArray = allocate_array_double(numEntries, "resortedArray");
   
   for(int i=0; i<numEntries; i++)
   {
@@ -151,7 +154,7 @@ float *create_resortedArray(int numEntries, float *sortedArray, int *indexArray)
 /*----------------------------------------------------------------*/
 
 #ifdef MPI
-float *communicate_array_float(int size, int thisRank, int numEntries, float *posIndex, int gridsize, float *thisArray, float *thisGrid)
+double *communicate_array_double(int size, int thisRank, int numEntries, double *posIndex, int gridsize, double *thisArray, float *thisGrid)
 {
   /*--------------------------------*/
   /* prepare all necessary arrays */
@@ -160,26 +163,27 @@ float *communicate_array_float(int size, int thisRank, int numEntries, float *po
   int *indexArray = NULL;
   
   /* create rankArray */
-  int *rankArray = create_rankArray_3Dgrid(size, numEntries, posIndex, gridsize);
-  
+  int *rankArray = create_rankArray_3Dgrid(numEntries, posIndex, gridsize);
+//   int *rankArray = create_rankArray_3Dgrid(size, numEntries, posIndex, gridsize);
+
   /* create sortedArray = thisArray sorted by ranks */
-  float *sortedArray = create_sortedArray_float(numEntries, thisArray, rankArray, &indexArray);
+  double *sortedArray = create_sortedArray_double(numEntries, thisArray, rankArray, &indexArray);
   
   /* create array with number of galaxies to send to ranks */
-  int32_t *numOnRanks = create_numToSendToRanksArray(size, numEntries, rankArray, indexArray);
+  int32_t *numOnRanks = create_numToSendToRanksArray(size, numEntries, rankArray);
   
   /* arrays for receiving */
   int32_t *recvNumOnRanks = allocate_array_int32_t(size, "recvNumOnRanks");
   int32_t numRecvEntries = 0;
-  float *recvArray = NULL;
-  float *recvNewArray = NULL;
-  float *resortedArray = NULL;
+  double *recvArray = NULL;
+  double *recvNewArray = NULL;
+  double *resortedArray = NULL;
     
   /*--------------------------------*/
   /* sending forward */
   /*--------------------------------*/  
   
-  send_recv_array_float(size, thisRank, numOnRanks, &recvNumOnRanks, sortedArray, &recvArray);  
+  send_recv_array_double(size, thisRank, numOnRanks, &recvNumOnRanks, sortedArray, &recvArray);  
   free(sortedArray);
   sortedArray = NULL;
   
@@ -188,15 +192,15 @@ float *communicate_array_float(int size, int thisRank, int numEntries, float *po
   /*--------------------------------*/  
   
   numRecvEntries = get_numEntries_numOnThisRank(size, recvNumOnRanks);
-  recvNewArray = allocate_array_float(numRecvEntries, "recvNewArray");
-  get_grid_values(size, thisRank, numRecvEntries, &recvNewArray, recvArray, gridsize, thisGrid);
+  recvNewArray = allocate_array_double(numRecvEntries, "recvNewArray");
+  get_grid_values(numRecvEntries, &recvNewArray, recvArray, gridsize, thisGrid, 0);
   free(recvArray);
   
   /*--------------------------------*/
   /* sending backward */
   /*--------------------------------*/  
   
-  send_recv_array_float(size, thisRank, recvNumOnRanks, &numOnRanks, recvNewArray, &sortedArray);
+  send_recv_array_double(size, thisRank, recvNumOnRanks, &numOnRanks, recvNewArray, &sortedArray);
   free(recvNewArray);
 
   /*--------------------------------*/

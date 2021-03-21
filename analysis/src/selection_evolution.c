@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <math.h>
 #include <time.h>
+#include <assert.h>
 
 #ifdef MPI
 #include <mpi.h>
@@ -17,8 +18,6 @@
 #include "build_index_tree_walking.h"
 #include "derive_properties.h"
 #include "operations_on_properties.h"
-// #include "statistics.h"
-// #include "selection.h"
 #include "statistics_evolution.h"
 #include "selection_evolution.h"
 
@@ -41,21 +40,25 @@ void get_1D_histogram_evolution(dconfObj_t simParam, outgtree_t **theseTrees, in
   int currSnap = 0, prevSnap = -1;
   for(int snap=0; snap<numSnaps; snap++)
   { 
-    if(thisRank == 0) printf("snap = %d\n", snap);
+    if(thisRank == 0) printf("1D histogram evolution: snap = %d\n", snap);
     
     currSnap = snap;
     get_listEquals(theseTrees, numTrees, index, listEquals, sizeListEquals, listMerged, prevSnap, currSnap);
     prevSnap = currSnap;
     
     /* reading data */
-    float *binProperty1 = NULL;
-    binProperty1 = getThisProperty(simParam, theseTrees, numTrees, listEquals, index, sizeListEquals, simParam->binProperty_1D_evolution[listID], currSnap, simParam->times);
+    int numGal1 = 0;
+    double *binProperty1 = NULL;
+    binProperty1 = getThisProperty(simParam, theseTrees, numTrees, listEquals, index, sizeListEquals, simParam->binProperty_1D_evolution[listID], currSnap, simParam->times, &numGal1);
     
-    float *property = getThisProperty(simParam, theseTrees, numTrees, listEquals, index, sizeListEquals, simParam->property_1D_evolution[listID], currSnap, simParam->times);
+    int numGal = 0;
+    double *property = getThisProperty(simParam, theseTrees, numTrees, listEquals, index, sizeListEquals, simParam->property_1D_evolution[listID], currSnap, simParam->times, &numGal);
+    
+    assert(numGal1 == numGal);
     
     /* fill histogram with data */
-    if(get_numGal_at_snap(sizeListEquals, numTrees) > 0)
-      calc_1D_histogram_evolution(get_numGal_at_snap(sizeListEquals, numTrees), property, currSnap, binProperty1, binsInLog, binsPerMag, minIndex1, 0, numBins1, numSnaps, &histogram, &histogramNum);
+    if(numGal > 0)
+      calc_1D_histogram_evolution(numGal, property, currSnap, binProperty1, binsInLog, binsPerMag, minIndex1, 0, numBins1, numSnaps, &histogram, &histogramNum);
 
     free(property);
     free(binProperty1);
@@ -94,7 +97,7 @@ void get_1D_histogram_evolution(dconfObj_t simParam, outgtree_t **theseTrees, in
 #endif
   
   /* save histogram */
-  char *filename = create_filename_1D_histogram_evolution(simParam->outputDir, simParam->property_1D_evolution[listID], simParam->binProperty_1D_evolution[listID]);
+  char *filename = create_filename_1D_histogram_evolution(simParam->outputDir, simParam->property_1D_evolution[listID], simParam->binProperty_1D_evolution[listID], simParam->smoothingScale, simParam->MvirThreshold);
   write_1D_histogram_evolution(numBins1, values1, numSnaps, simParam->redshifts, histogram, histogramNum, thisRank, filename);
   free(filename);
 
@@ -104,9 +107,43 @@ void get_1D_histogram_evolution(dconfObj_t simParam, outgtree_t **theseTrees, in
   free(histogramNum);
 }
 
-char *create_filename_1D_histogram_evolution(char *directory, char *property, char *binProperty)
+char *create_filename_1D_histogram_evolution(char *directory, char *property, char *binProperty, float smoothingScale, double MvirThreshold)
 {
-  char *filename = concat_strings(6, directory, "/1Dhistogram_evolution_", property, "_", binProperty, ".dat");
+  char smoothingScale_name[12];
+  if(strstr(property, "smooth") != NULL || strstr(property, "SMOOTH") != NULL)
+  {
+    sprintf(smoothingScale_name, "%3.2f", smoothingScale);
+  }
+
+  char *propertyName = NULL;
+  char *binPropertyName = NULL;
+  if(strstr(property, "_MVIRCUT") != NULL)
+  {
+    char Mvir_name[12];
+    sprintf(Mvir_name, "%.2e", MvirThreshold);
+    
+    propertyName = concat_strings(2, property, Mvir_name);
+    binPropertyName = concat_strings(2, binProperty, Mvir_name);
+  }
+  else
+  {
+    propertyName = concat_strings(1, property);
+    binPropertyName = concat_strings(1, binProperty);
+  }
+  
+  char *filename = NULL;
+  
+  if(strstr(property, "smooth") != NULL || strstr(property, "SMOOTH") != NULL)
+  {
+    filename = concat_strings(7, directory, "/1Dhistogram_evolution_", propertyName, "_", binPropertyName, smoothingScale_name, ".dat");
+  }
+  else
+  {
+    filename = concat_strings(6, directory, "/1Dhistogram_evolution_", propertyName, "_", binPropertyName, ".dat");
+  }
+  
+  free(propertyName);
+  free(binPropertyName);
   
   return filename;
 }

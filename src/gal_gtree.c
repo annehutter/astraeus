@@ -41,6 +41,7 @@ gal_t *initGal()
   newGal->scalefactorLastMajorMerger = 0.;
   newGal->Mgas = 0.;
   newGal->Mstar = 0.;
+  newGal->fracMgasMer = 0.;
   newGal->MgasIni = 0.;
   
   newGal->feff = 0.;

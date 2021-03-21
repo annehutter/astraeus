@@ -8,10 +8,7 @@
 #include <stdint.h>
 
 #ifdef __MPI
-#include <fftw3-mpi.h>
 #include <mpi.h>
-#else
-#include <fftw3.h>
 #endif
 
 #include "phys_const.h"
@@ -58,9 +55,9 @@ float get_UVcorrectionFactor(float timeOffset, float timeBegin, float timeEnd, f
     return UVcorrectionFactor;
 }
 
-float calc_UV_lum_SMH(int numSnaps, float *starmassHistoryAll, int thisGal, int currSnap, float *corrFactor)
+float calc_UV_lum_SMH(int numSnaps, double *starmassHistoryAll, int thisGal, int currSnap, float *corrFactor)
 {
-    float *starmassHistory = &(starmassHistoryAll[(long int)thisGal*numSnaps]);
+    double *starmassHistory = &(starmassHistoryAll[(long int)thisGal*numSnaps]);
     
     /* sum up contribution from previous times */
     float totUVperFreq = 0.;
@@ -73,7 +70,7 @@ float calc_UV_lum_SMH(int numSnaps, float *starmassHistoryAll, int thisGal, int 
     return totUVperFreq;
 }
 
-float *calc_UV_lum_at_snap(dconfObj_t simParam, int numGal, int numSnaps, float *starmassHistoryAll, int currSnap)
+float *calc_UV_lum_at_snap(dconfObj_t simParam, int numGal, int numSnaps, double *starmassHistoryAll, int currSnap)
 {
     float *snaps_ages = simParam->times;
     
@@ -108,10 +105,10 @@ float *calc_UV_lum_at_snap(dconfObj_t simParam, int numGal, int numSnaps, float 
     return Lc_int;
 }
 
-float *calc_UV_mag(dconfObj_t simParam, int numGal, int numSnaps, float *starmassHistoryAll, int currSnap)
+double *calc_UV_mag(dconfObj_t simParam, int numGal, int numSnaps, double *starmassHistoryAll, int currSnap)
 {    
     float *Lc = calc_UV_lum_at_snap(simParam, numGal, numSnaps, starmassHistoryAll, currSnap);
-    float *UVmag = allocate_array_float(numGal, "UVmag");
+    double *UVmag = allocate_array_double(numGal, "UVmag");
     
     /* Convert total UVperFreq into magnitudes */
     for(int gal=0; gal<numGal; gal++)

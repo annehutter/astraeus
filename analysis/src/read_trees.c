@@ -59,6 +59,60 @@ int32_t read_trees_in_file(char *fileName, outgtree_t ***thisTreeList, int offse
   return numTrees;
 }
 
+outgtree_t *read_tree_type2(FILE *f, int32_t numGal)
+{
+  outgtree_t *newTree = NULL;
+    
+  newTree = initOutGtree(numGal);
+  newTree->numGal = numGal;
+  
+  fread(newTree->galaxies, sizeof(outgal_t), numGal, f);
+  
+  return newTree;
+}
+
+int32_t read_trees_in_file_type2(char *fileName, outgtree_t ***thisTreeList, int offset)
+{
+  outgtree_t **theseTrees = *thisTreeList;
+  int32_t numTrees = 0;
+  int32_t numTreesTmp = 0;
+  int32_t *numGal = NULL;
+  
+  FILE *f = NULL;
+  
+  if( (f=fopen(fileName, "r")) == NULL)
+  {
+    fprintf(stderr, "Could not open file %s\n", fileName);
+    exit(EXIT_FAILURE);
+  }
+
+  /* READING TREES */
+  fread(&numTreesTmp, sizeof(int32_t), 1, f);
+  
+  printf("numTrees read = %d\n", numTreesTmp);
+  theseTrees = realloc(theseTrees, sizeof(outgtree_t) * (numTrees + numTreesTmp + offset));
+  numGal = allocate_array_int32_t(numTreesTmp, "numGal");
+  
+  for(int tree=0; tree<numTreesTmp; tree++)
+  {
+    fread(&(numGal[tree]), sizeof(int32_t), 1 ,f);
+  }
+  
+  for(int tree=0; tree<numTreesTmp; tree++)
+  {
+    theseTrees[offset + numTrees + tree] = read_tree_type2(f, numGal[tree]);
+  }
+  numTrees += numTreesTmp;
+
+  *thisTreeList = theseTrees;
+  
+  fclose(f);
+  
+  free(numGal);
+  
+  return numTrees;
+}
+
 int32_t *get_num_files_to_read(int numFiles, int thisRank, int size)
 {  
   int32_t *numFilesToRead = allocate_array_int32_t(size, "numFilesToRead");
@@ -98,7 +152,7 @@ char *get_file_name(char *baseName, int32_t file, int32_t *numFilesToRead, int t
 }
 
 /* reading in routine that can deal with reading multiple files (each different on eavch processor) */
-int32_t read_trees_in_all_files(char *baseName, int numFiles, outgtree_t ***thisTreeList, int thisRank, int size)
+int32_t read_trees_in_all_files(char *baseName, int inputType, int numFiles, outgtree_t ***thisTreeList, int thisRank, int size)
 {
   outgtree_t **theseTrees = *thisTreeList;
   int32_t numTrees = 0;
@@ -112,7 +166,10 @@ int32_t read_trees_in_all_files(char *baseName, int numFiles, outgtree_t ***this
     fileName = get_file_name(baseName, file, numFilesToRead, thisRank);
     printf("rank %d: reading file '%s'\n", thisRank, fileName);
     offset = numTrees;
-    numTrees += read_trees_in_file(fileName, &theseTrees, offset);
+    if(inputType == 2)
+      numTrees += read_trees_in_file_type2(fileName, &theseTrees, offset);
+    else
+      numTrees += read_trees_in_file(fileName, &theseTrees, offset);
     free(fileName);
   }
   free(numFilesToRead);

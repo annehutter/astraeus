@@ -28,7 +28,6 @@
 #include "nion.h"
 #include "nion_gal.h"
 #include "ion_emissivity.h"
-#include "run.h"
 
 #include "cifog/confObj.h"
 #include "cifog/grid.h"
@@ -41,11 +40,22 @@
 #include "evol_gal.h"
 #include "starformation_SNfeedback.h"
 
+#include "comm_gal_grid_struct.h"
+#include "comm_gal_grid.h"
+
 #include "cutandresort.h"
+
+#include "run.h"
+
 #define MAXGAL 100000
 #define MAXGAL_INC 10000
 
-void run_delphi(dconfObj_t simParam, int thisRank, int size)
+/*---------------------------------------------------------------------*/
+/* Core routine of astraeus: reads in data, initialises look-up tables,*/
+/* loops over snapshots  to evolve galaxies and progress reionization, */
+/* outputs to files, deallocation of all data */
+/*---------------------------------------------------------------------*/
+void run_astraeus(dconfObj_t simParam, int thisRank, int size)
 {
   /*---------------------------------------------------------------------*/
   /* INITIALIZATION & STARTUP */
@@ -72,9 +82,11 @@ void run_delphi(dconfObj_t simParam, int thisRank, int size)
   int maxSnap = 0;
   simParam->timeSnaps = get_times_from_redshifts(thisRedshiftList, endSnap, simParam->hubble_h, simParam->omega_m, simParam->omega_l);
   
+  /* create lookup table for delayed SN feedback scheme */
   if(simParam->delayedSNfeedback == 1)
     simParam->SNenergy = get_SNenergy_delayed(endSnap, simParam->timeSnaps);
   
+  /* create lookup table for correction factor when ionizing emissivity is distributed over time step*/
   if(simParam->reion == 1 && simParam->sps_model > 10)
     simParam->corrFactor_nion = get_corrFactor_nion(simParam);
   
@@ -84,7 +96,9 @@ void run_delphi(dconfObj_t simParam, int thisRank, int size)
   int outSnapCounter = 0;
 
   /* REIONIZATION PARAMETERS */
-  int memory_intensive = 1;
+  int memory_intensive = simParam->memoryIntensive;
+  char *zreionName = "ZREION";
+  char *photHIName = "PHOTHI";
   nion_t *thisNionList = NULL;
   confObj_t cifogParam = NULL;
   grid_t *grid = NULL;
@@ -92,12 +106,12 @@ void run_delphi(dconfObj_t simParam, int thisRank, int size)
   fftw_complex *cifogNionHeI = NULL;
   fftw_complex *cifogNionHeII = NULL;
   fftw_complex *photHI = NULL;
-  fftw_complex *XHII = NULL;
   fftw_complex *zreion = NULL;
   integral_table_t *integralTable = NULL;
   photIonlist_t *photIonBgList = NULL;
-  if(simParam->reion == 1 && simParam->reion_model == 2)
+  if(simParam->reion == 1 && simParam->reion_model == 1)
   {
+    /* initialising CIFOG */
     cifog_init(simParam->cifogIniFile, &cifogParam, &grid,  &integralTable, &photIonBgList, thisRank);
     check_cifogParam(simParam, cifogParam, thisRank);
   }
@@ -105,10 +119,10 @@ void run_delphi(dconfObj_t simParam, int thisRank, int size)
   /* SET WALKER TO CORRECT STARTING POSITION IN TREE */
   set_walker_to_startSnap(numGtrees, &theseGtrees, startSnap);
   
-  int numHalos = 0;     // currently only for printing output needed
+  long int numHalos = 0;     // currently only for printing output needed
   
   /*---------------------------------------------------------------------*/
-  /* RUN DELPHI ACROSS SNAPSHOTS */
+  /* RUN ASTRAEUS ACROSS SNAPSHOTS */
   /*---------------------------------------------------------------------*/
   
   /* LOOPING OVER SNAPSHOTS */
@@ -127,8 +141,9 @@ void run_delphi(dconfObj_t simParam, int thisRank, int size)
     MPI_Barrier(MPI_COMM_WORLD);
 #endif
     
-    evolve(numGtrees, &theseGtrees, minSnap, maxSnap, simParam, domain, thisNionList, photHI, XHII, zreion, simParam->snapList[outSnapCounter], &outGalList, numGalSnap);
-    
+    /* evolve galaxies by <deltaSnap> snapshots */
+    evolve(numGtrees, &theseGtrees, minSnap, maxSnap, simParam, domain, thisNionList, photHI, zreion, simParam->snapList[outSnapCounter], &outGalList, numGalSnap);
+        
 #ifdef MPI
     MPI_Barrier(MPI_COMM_WORLD);
 #endif
@@ -146,59 +161,48 @@ void run_delphi(dconfObj_t simParam, int thisRank, int size)
 #ifdef MPI
     MPI_Barrier(MPI_COMM_WORLD);
 #endif
-        
+    
     /* do reionization */
-    if(simParam->reion == 1)
+    if(simParam->reion == 1 && simParam->reion_model == 1)
     {
       reallocNion(&thisNionList, thisNionList->numGalWritten);
 
       numHalos += thisNionList->numGalWritten;
       
-      // print mean number of ionizing photons
+      /* print mean number of ionizing photons */
       double meanNion = get_mean_nion(thisNionList);
       if(thisRank == 0) printf("\n********\nDELPHI: sum(nion) = %e\n********\n", 1.e50*meanNion);
       
-      // mapping ionizing photons to grid
+      /* mapping ionizing photons to grid */
       cifogNion = map_galnion_to_grid(thisNionList, domain, memory_intensive);
+
+      /* run CIFOG for deltaRedshift which should return photoionization rate grid */
+      double deltaRedshift = calc_deltaRedshift(thisRedshiftList, snap);
+      cifog(cifogParam, snap, thisRedshiftList->redshifts[snap], deltaRedshift, grid, cifogNion, cifogNionHeI, cifogNionHeII, integralTable, photIonBgList, thisRank);
       
-      if(simParam->reion_model == 2)
-      {
-        // do cifog_step which should return photoionization rate grid
-        double deltaRedshift = calc_deltaRedshift(thisRedshiftList, snap);
-        cifog(cifogParam, snap, thisRedshiftList->redshifts[snap], deltaRedshift, grid, cifogNion, cifogNionHeI, cifogNionHeII, integralTable, photIonBgList, thisRank);
-        
-       // update current photoionization & XHII field
-//         update_photHI_field(&photHI, grid);
-//         update_XHII_field(&XHII, grid);
-        update_photHI_zreion_field(&photHI, grid, thisRedshiftList->redshifts[snap], simParam->XHII_threshold);
-        update_zreion_field(&zreion, grid, thisRedshiftList->redshifts[snap], simParam->XHII_threshold);
-        
-        char zreionFile[MAXLENGTH];
-        if(thisRank == 0)
-        {
-          for(int i=0; i<MAXLENGTH; i++) zreionFile[i] = '\0';
-          sprintf(zreionFile, "%s/zreion_%02d", simParam->outFileName, snap);
-          write_grid_to_file_double_test(zreion, grid->nbins, grid->nbins, zreionFile);
-        }
-        char photHIFile[MAXLENGTH];
-        if(thisRank == 0)
-        {
-          for(int i=0; i<MAXLENGTH; i++) photHIFile[i] = '\0';
-          sprintf(photHIFile, "%s/photHI_zreion_%02d", simParam->outFileName, snap);
-          write_grid_to_file_double_test(photHI, grid->nbins, grid->nbins, photHIFile);
-        }
-      }
+      /* update current photoionization & XHII field */
+      /* WATCH OUT: The following two lines are order sensitive! */
+      update_field(&photHI, grid, thisRedshiftList->redshifts[snap], simParam->XHII_threshold, photHIName, memory_intensive);
+      update_field(&zreion, grid, thisRedshiftList->redshifts[snap], simParam->XHII_threshold, zreionName, memory_intensive);
+      
+      /* get photoionization and ionization values at galaxies' positions */
+      if(simParam->radfeedback == 1 && memory_intensive == 0)
+        map_grid_to_gal(numGtrees, &theseGtrees, minSnap, maxSnap, simParam, domain, grid);
+
+      /* save reionization redshift grid in a file */
+      write_zreion_grids_to_file(simParam, domain, snap, grid, zreion, photHI);
+      
+      /* initialise ionizing emissivity list */
       if(cifogNion != NULL) fftw_free(cifogNion);
-      deallocate_nion(thisNionList);
-      
+      deallocate_nion(thisNionList); 
     }
     
 #ifdef MPI
     MPI_Barrier(MPI_COMM_WORLD);
 #endif
         
-    /* printing */
-    if(simParam->horizontalOutput==1)
+    /* save the number of all galaxies in an array */
+    if(simParam->horizontalOutput == 1)
     {
       int printNumGalSnap = numGalSnap[snap];
 #ifdef MPI
@@ -209,15 +213,15 @@ void run_delphi(dconfObj_t simParam, int thisRank, int size)
   }
 
   /* Write number of galaxies contained in each snap into a file */
-  if(simParam->horizontalOutput==1)
+  if(simParam->horizontalOutput == 1)
   {
     write_num_galaxies_to_file(simParam, numGalSnap, endSnap, thisRank);
   }
   
-  /* Write trees into #PROC file */
+  /* Write trees into #PROC files */
   if(simParam->verticalOutput == 1)
   {
-    if(simParam->endSnap!=74)
+    if(simParam->endSnap!=OUTPUTSNAPNUMBER+1)
     {
       gtree_t **theseNewGtrees = NULL;
       int newNumGtrees;
@@ -235,35 +239,35 @@ void run_delphi(dconfObj_t simParam, int thisRank, int size)
   }
   
 #ifdef MPI
-  int tmpNumHalos = numHalos;
-  MPI_Allreduce(&tmpNumHalos, &numHalos, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+  long int tmpNumHalos = numHalos;
+  MPI_Allreduce(&tmpNumHalos, &numHalos, 1, MPI_LONG, MPI_SUM, MPI_COMM_WORLD);
+  if(thisRank == 0) printf("Total number of halos/galaxies = %ld\n", numHalos);
 #endif
-  if(thisRank == 0) printf("Total number of halos/galaxies = %d\n", numHalos);
-    
+
   /*---------------------------------------------------------------------*/
   /* DEALLOCATION */
   /*---------------------------------------------------------------------*/
 
-  // deallocate initialisation of cifog  end shut it down
-  if(simParam->reion == 1)
+  /* end CIFOG */
+  if(simParam->reion == 1 && simParam->reion_model == 1)
   {
-    if(simParam->reion_model == 2)
-    {
       cifog_deallocate(cifogParam, grid, integralTable, photIonBgList, thisRank);
       if(photHI != NULL) fftw_free(photHI);
-      if(XHII != NULL) fftw_free(XHII);
       if(zreion != NULL) fftw_free(zreion);
-    }
   }
 
+  /* deallocate all lists, trees and other structs */
   deallocate_redshiftlist(thisRedshiftList);
   free(numGalSnap);
   deallocate_gtreeList(theseGtrees, numGtrees);
   deallocate_domain(domain);
 }
 
-
-void evolve(int numGtrees, gtree_t ***thisGtreeList, int minSnap, int maxSnap, dconfObj_t simParam, domain_t *thisDomain, nion_t *thisNionList, fftw_complex *photHI, fftw_complex *XHII, fftw_complex *zreion, int outSnap, outgalsnap_t **outGalList, int *numGalInSnapList)
+/*---------------------------------------------------------------------*/
+/* This function evolves all galaxies in the trees by (maxSnap-minSnap)*/
+/* time steps                                                          */
+/*---------------------------------------------------------------------*/
+void evolve(int numGtrees, gtree_t ***thisGtreeList, int minSnap, int maxSnap, dconfObj_t simParam, domain_t *thisDomain, nion_t *thisNionList, fftw_complex *photHI, fftw_complex *zreion, int outSnap, outgalsnap_t **outGalList, int *numGalInSnapList)
 {
   gtree_t **theseGtrees = *thisGtreeList;
   gtree_t *thisGtree = NULL;
@@ -271,9 +275,7 @@ void evolve(int numGtrees, gtree_t ***thisGtreeList, int minSnap, int maxSnap, d
   int32_t gal = 0;
   int32_t snapGal = 0;
   int32_t numGal = 0;
-  
   double inv_boxsize = simParam->inv_boxsize;
-  
   int32_t numGalInSnap = 0;
   int32_t numGalInOutSnap = 0;
   int32_t count = 0;
@@ -284,7 +286,7 @@ void evolve(int numGtrees, gtree_t ***thisGtreeList, int minSnap, int maxSnap, d
     thisGtree = theseGtrees[gtree];
     numGal = thisGtree->numGal;
     gal = thisGtree->walker;
-    
+        
     if(gal < numGal) 
     {
       snapGal = thisGtree->galaxies[gal].snapnumber;
@@ -293,19 +295,19 @@ void evolve(int numGtrees, gtree_t ***thisGtreeList, int minSnap, int maxSnap, d
       for(int snap=minSnap; snap<maxSnap; snap++)
       {
         if(snapGal == snap)
-        {
+        {          
           /* LOOP OVER GALAXIES */
           thisGal = &(thisGtree->galaxies[gal]);
           while(thisGal->snapnumber == snap)
           {
-            /* get photoionization rate */
-            if(simParam->reion == 1 && simParam->radfeedback == 1)
+            /* get grid properties for memory intensive option (zreion and photHI grids exist) */
+            if(zreion != NULL && simParam->reion == 1)
             {
-              thisGal->photHI_bg = get_photHI_gal(thisGal, thisDomain->nbins, inv_boxsize, photHI);
+              thisGal->photHI_bg = get_gridProperty_gal(thisGal, thisDomain->nbins, inv_boxsize, photHI);
+
               if(thisGal->zreion <= 0.) 
               {
-//                 thisGal->zreion = get_zreion_gal(thisGal, thisDomain->nbins, inv_boxsize, XHII, simParam->XHII_threshold);
-                thisGal->zreion = get_zreionField_gal(thisGal, thisDomain->nbins, inv_boxsize, zreion);
+                thisGal->zreion = get_gridProperty_gal(thisGal, thisDomain->nbins, inv_boxsize, zreion);
               }
             }
             
@@ -314,9 +316,8 @@ void evolve(int numGtrees, gtree_t ***thisGtreeList, int minSnap, int maxSnap, d
             
             if(thisGal->zreion > 0.) assert(thisGal->zreion >= 1./thisGal->scalefactor - 1.);
 
-            /* store ionizing properties for reionization, TODO: make sure only galaxies at specified snapshot */
-            if(simParam->reion == 1)
-              copy_gal_to_nion(thisGal, simParam, thisDomain, 1.1, thisNionList);
+            /* store ionizing properties for reionization */
+            if(simParam->reion == 1) copy_gal_to_nion(thisGal, simParam, thisDomain, 1.1, thisNionList);
             
             /* clean galaxy (free not needed memory) */
             clean_gal(thisGal, outSnap);
@@ -332,8 +333,10 @@ void evolve(int numGtrees, gtree_t ***thisGtreeList, int minSnap, int maxSnap, d
 
               if(numGalInOutSnap == (MAXGAL + count * MAXGAL_INC) - 1)
               {
-                  count++;
-                  (*outGalList) = realloc((*outGalList), sizeof(outgalsnap_t)*(MAXGAL + count * MAXGAL_INC));
+                count++;
+                (*outGalList) = realloc((*outGalList), sizeof(outgalsnap_t)*(MAXGAL + count * MAXGAL_INC));
+                for(int outGal=numGalInOutSnap; outGal<MAXGAL + count * MAXGAL_INC; outGal++)
+                  initOutGalSnapWithoutAllocation(&((*outGalList)[outGal]));
               }
             }
             
@@ -356,6 +359,10 @@ void evolve(int numGtrees, gtree_t ***thisGtreeList, int minSnap, int maxSnap, d
   }
 }
 
+/*---------------------------------------------------------------------*/
+/* This function sets the pointer within each tree to the first galaxy */
+/* at snapshot <startSnap>                                             */
+/*---------------------------------------------------------------------*/
 void set_walker_to_startSnap(int numGtrees, gtree_t ***thisGtreeList, int startSnap)
 {
   gtree_t **theseGtrees = *thisGtreeList;
@@ -379,5 +386,38 @@ void set_walker_to_startSnap(int numGtrees, gtree_t ***thisGtreeList, int startS
     }
     
     thisGtree->walker = gal;
+  }
+}
+
+/*---------------------------------------------------------------------*/
+/* This function writes the grids containing the reionization redshift */
+/* and the photoionization rate at that redshift to files              */
+/*---------------------------------------------------------------------*/
+void write_zreion_grids_to_file(dconfObj_t simParam, domain_t *thisDomain, int snap, grid_t *thisGrid, fftw_complex *zreion, fftw_complex *photHI)
+{
+  int memory_intensive = simParam->memoryIntensive;
+  char zreionFile[MAXLENGTH];
+  for(int i=0; i<MAXLENGTH; i++) zreionFile[i] = '\0';
+  sprintf(zreionFile, "%s/zreion_%02d", simParam->outFileName, snap);
+  if(memory_intensive == 1)
+  {
+    write_grid_to_file_double_test(zreion, thisGrid->nbins, thisGrid->nbins, 0, zreionFile, thisDomain->thisRank, memory_intensive);
+  }
+  else
+  {
+    write_grid_to_file_double_test(thisGrid->zreion, thisGrid->nbins, thisGrid->local_n0, thisGrid->local_0_start, zreionFile, thisDomain->thisRank, memory_intensive);
+  }
+  
+  /* save photoionization grid in a file */
+  char photHIFile[MAXLENGTH];
+  for(int i=0; i<MAXLENGTH; i++) photHIFile[i] = '\0';
+  sprintf(photHIFile, "%s/photHI_zreion_%02d", simParam->outFileName, snap);
+  if(memory_intensive == 1)
+  {
+    write_grid_to_file_double_test(photHI, thisGrid->nbins, thisGrid->nbins, 0, photHIFile, thisDomain->thisRank, memory_intensive);
+  }
+  else
+  {
+    write_grid_to_file_double_test(thisGrid->photHI_zreion, thisGrid->nbins, thisGrid->local_n0, thisGrid->local_0_start, photHIFile, thisDomain->thisRank, memory_intensive);
   }
 }

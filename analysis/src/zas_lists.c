@@ -18,6 +18,12 @@ int get_num_snapshots(outgtree_t **thisTreeList)
 {
   /* getting snapnumbers and scalefactors */
   int numSnaps = thisTreeList[0]->galaxies[thisTreeList[0]->numGal-1].snapnumber + 1;
+#ifdef MPI
+  int recvNumSnaps = 0;
+  MPI_Allreduce(&numSnaps, &recvNumSnaps, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+  
+  numSnaps = recvNumSnaps;
+#endif
   
   return numSnaps;
 }
