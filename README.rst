@@ -73,6 +73,13 @@ Download & Build
 
 This will download the code and a test case from the github directory and compile the source code.
 
+Common.mk
+---------
+
+Adjust the paths of the FFTW libraries if they are not enabled by default or uncomment those lines and remove FFTW flags and links. 
+
+Note that the ``OUTPUTSNAPNUMBER`` needs to be adjusted to the number of snapshots of the merger trees, i.e. if the merger trees start at snap ``0`` and end at snap ``i``, then set ``OUTPUTSNAPNUMBER = i`` while ``endSnapshot = i+1`` in the parameter file (see below).
+
 Execution
 ---------
 
