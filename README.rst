@@ -8,7 +8,7 @@ When you should use this code
 
 If you want to compute the self-consistent evolution of high-redshift galaxy properties and reionization, i.e. the galaxy properties in the presence of an inhomogeneous ultraviolet background and the time evolution of the ionization (HI, HeII, HeIII) fields, then you should use this code. You will need 
 
-- merger trees generated with ``cutNresort``
+- merger trees generated with ``Consistent-Trees`` and resorted to be locally horizontal with ``cutNresort``.
 - (optional) cosmological box with DM/gas overdensities **or** gas densities (grid); if none are given, DM/gas density is assumed to be homogeneous.
 
 Note that ASTRAEUS can also be run on analytical merger trees when reionization is switched off (see below).
@@ -81,7 +81,7 @@ The first test case can then be run by
 
     $ ./astraeus iniFile.ini
 
-``iniFile.ini`` contains the input parameters that are needed for any run. For a different simulation the code does not need to be recompiled but only the parameter file iniFile.ini to be adapted. ``iniFile.ini`` contains the input parameters for the galaxy evolution model and cosmology; furthermore it needs to contain the path to the ``cifogIniFile.ini``. In ``cifogIniFile.ini`` the input parameters for `CIFOG <https://ui.adsabs.harvard.edu/abs/2018ascl.soft03002H/abstract>`__ (described in `Hutter (2018) <https://ui.adsabs.harvard.edu/abs/2018MNRAS.477.1549H/abstract>`__) are set, for more details and what each parameter means please visit the `CIFOG github page <https://github.com/annehutter/grid-model/>`__.
+``iniFile.ini`` contains the input parameters that are needed for any run. For a different simulation the code does not need to be recompiled but only the parameter file ``iniFile.ini`` to be adapted. ``iniFile.ini`` contains the input parameters for the galaxy evolution model and cosmology; furthermore it needs to contain the path to the ``cifogIniFile.ini``. In ``cifogIniFile.ini`` the input parameters for `CIFOG <https://ui.adsabs.harvard.edu/abs/2018ascl.soft03002H/abstract>`__ (described in `Hutter (2018) <https://ui.adsabs.harvard.edu/abs/2018MNRAS.477.1549H/abstract>`__) are set, for more details and what each parameter means please visit the `CIFOG github page <https://github.com/annehutter/grid-model/>`__.
 
 Parameter File
 ==============
@@ -98,34 +98,34 @@ Parameter File
 - ``endSnapshot`` = *[integer]* snapshot where to end computing the evolution of galaxy properties (and reionization) [default: 74]
 - ``deltaSnapshot`` = *[integer]* number of snapshots between reionization steps, i.e. computation of the ionization and photoionization rate fields; [vertical tree walking: ``endSnapshot`` - ``startSnapshot``, horizontal tree walking: 1]
 - ``gridsize`` = *[integer]* gridsize of the density fields
-- ``boxsize`` =  *[float]* length of the simulation box in h^-1 Mpc
+- ``boxsize`` =  *[double]* length of the simulation box in h^-1 Mpc
 
 **[Cosmology]**
 
-- ``OM0`` = *[float]* matter density parameter
-- ``OB0`` = *[float]* baryon density parameter
-- ``OL0`` = *[float]* lambda density parameter
-- ``HUBBLE_CONSTANT`` = *[float]* Hubble constant H = 100*h km/s/Mpc
+- ``OM0`` = *[double]* matter density parameter
+- ``OB0`` = *[double]* baryon density parameter
+- ``OL0`` = *[double]* lambda density parameter
+- ``HUBBLE_CONSTANT`` = *[double]* Hubble constant H = 100*h km/s/Mpc
 
 **[StarFormation]**
 
 - ``timestepModel`` = *[integer, optional]* flag to use either the default model with a constant fraction of gas turned into stars (as described in paper I) [value: 0], when comparing a simulation with a different time steps width but same spacing to a simulation using the default model [value: 1], or a model that assumes a constant star formation rate and is time step independent [value: 2]; if not defined, the default model is used
 - ``timestepModel1_rescaleFactor`` = *[float, optional]* factor with which time steps of the default simulation needs to be multiplied with to obtain the time steps of the simulation that is compared to the default simulation
 - ``timestepModel2_deltaTimeInMyr`` = *[float, optional]* time in Myr over which a fraction ``starFormationEfficiency`` of gas is turned into stars
-- ``starFormationEfficiency`` = *[float]* maximum star formation efficiency [typical values: 0.01-0.03]
+- ``starFormationEfficiency`` = *[double]* maximum star formation efficiency [typical values: 0.01-0.03]
 
 **[SNfeedback]**
 
 - ``doDelayedSNfeedback`` = *[integer]* delayed [value: 1] or instantaneous [value: 0] supernova feedback
-- ``SNenergyFractionIntoWinds`` = *[float]* supernova energy fraction that drives winds and causes gas ejection from galaxies [typical values: 0.05-0.3]
+- ``SNenergyFractionIntoWinds`` = *[double]* supernova energy fraction that drives winds and causes gas ejection from galaxies [typical values: 0.05-0.3]
 
 **[RadiativeFeedback]**
 
 - ``doRadfeedback`` = *[integer]*  include [value: 1] or not include [value: 0] radiative feedback when computing the evolution of galaxy properties
 - ``radfeedbackModel`` = radiative feedback model identifier; possible options are: MIN, SOBACCHI, TEMPEVOL, MJEANS
-- ``ionThreshold`` = *[float]* ionization threshold above which a cell is considered as ionized [typical value: 0.5]
-- ``tempIonGas`` = *[double]* temperature to which gas is heated upon ionization (Note for TEMPEVOL model: for M_c = M_F ``tempIonGas`` is a fourth of the temperature to which gas is heated upon ionization; for M_c = 8 M_F as indicated)
-- ``muGas`` = *[double]* average particle mass in units of a proton mass [value: 0.59]
+- ``ionThreshold`` = *[double]* ionization threshold above which a cell is considered as ionized [typical value: 0.5]
+- ``tempIonGas`` = *[float]* temperature to which gas is heated upon ionization (Note for TEMPEVOL model: for M_c = M_F ``tempIonGas`` is a fourth of the temperature to which gas is heated upon ionization; for M_c = 8 M_F as indicated)
+- ``muGas`` = *[float]* average particle mass in units of a proton mass [value: 0.59]
 
 **[Reionization]**
 
