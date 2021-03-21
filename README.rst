@@ -1,7 +1,7 @@
 ASTRAEUS
 ========
 
-Home of the semi-analytical / semi-numerical galaxy evolution and reionization code ASTRAEUS (semi-numerical rAdiative tranSfer coupling of galaxy formaTion and Reionization in n-body dArk mattEr simUlationS). The underlying model is described in `Hutter at al. (2021) <https://ui.adsabs.harvard.edu/abs/2021MNRAS.tmp..610H/abstract>`__. Suggestions for improvements are very welcome and can be sent to `this email address <a.k.hutter@rug.nl>`_.
+Home of the semi-analytical / semi-numerical galaxy evolution and reionization code ASTRAEUS (semi-numerical rAdiative tranSfer coupling of galaxy formaTion and Reionization in n-body dArk mattEr simUlationS). The underlying model is described in `Hutter et al. (2021) <https://ui.adsabs.harvard.edu/abs/2021MNRAS.tmp..610H/abstract>`__. Suggestions for improvements are very welcome and can be sent to `this email address <a.k.hutter@rug.nl>`_.
 
 When you should use this code
 =============================
