@@ -163,6 +163,63 @@ Parameter File
 - ``percentageOfTreesToWrite`` = *[integer]* percentage of trees to be written [default: 100]
 - ``outputFile`` = path for directory where output files are to be written
 
+Output Files
+============
+
+ASTRAEUS produces two types of output files:
+
+- **horizontal:** file contains only galaxies at a chosen snapshot (redshift).
+- **vertical:** file contains the local-horizontal merger trees with the computed galactic properties. 
+
+Both output files are binary (and to date have not been adjusted for ) and have the following formats:
+
+Horizontal
+----------
+
+Each galaxy has the following structure:
+- *[float]* ``scalefactor``: scale factor 
+- *[float]* ``pos[3]``: x, y, z coordinates in the simulation box in comoving Mpc/h
+- *[float]* ``vel[3]``: velocities in x, z, z direction in physical km/s (peculiar)
+- *[float]* ``Mvir``: halo mass in Msun/h
+- *[float]* ``Mvir_prog``: sum of all progenitor halo masses in Msun/h
+- *[float]* ``Rvir``: virial radius in comoving kpc/h
+- *[float]* ``velDisp``: velocity dispersion in physical km/s
+- *[float]* ``velMax``: maximum circular velocity in physical km/s
+- *[float]* ``spin``: halo spin parameter
+- *[float]* ``scalefactorLastMajorMerger``: scale factor of the last major merger (mass ratio > 0.3)
+- *[float]* ``MgasIni``: initial gas mass (after gas accretion and radiative feedback, before star formation and supernoave feedback) in Msun/h
+- *[float]* ``Mgas``: final gas mass (after star formation and supernovae feedback) in Msun/h
+- *[float]* ``Mstar``: stellar mass in Msun/h
+- *[float]* ``feff``: star formation efficiency 
+- *[float]* ``fg``: fraction of the gas mass given by the cosmological ratio that a halo can retain in the presence of the UV background
+- *[float]* ``zreion``: redshift when cell where galaxy is located became reionized
+- *[float]* ``photHI_bg``: photoionization rate in s^-1 when cell where galaxy is located became reionized
+- *[float]* ``stellarmasshistory[OUTPUTSNAPNUMBER]``: star formation history with each entry in the array listing the stellar mass form at the respective snapshot (redshift)
+
+Vertical
+--------
+
+Each galaxy has the following structure:
+- *[float]* ``scalefactor``: scale factor 
+- *[float]* ``pos[3]``: x, y, z coordinates in the simulation box in comoving Mpc/h
+- *[float]* ``vel[3]``: velocities in x, z, z direction in physical km/s (peculiar)
+- *[float]* ``Mvir``: halo mass in Msun/h
+- *[float]* ``Mvir_prog``: sum of all progenitor halo masses in Msun/h
+- *[float]* ``Rvir``: virial radius in comoving kpc/h
+- *[float]* ``velDisp``: velocity dispersion in physical km/s
+- *[float]* ``velMax``: maximum circular velocity in physical km/s
+- *[float]* ``spin``: halo spin parameter
+- *[float]* ``scalefactorLastMajorMerger``: scale factor of the last major merger (mass ratio > 0.3)
+- *[float]* ``MgasIni``: initial gas mass (after gas accretion and radiative feedback, before star formation and supernoave feedback) in Msun/h
+- *[float]* ``Mgas``: final gas mass (after star formation and supernovae feedback) in Msun/h
+- *[float]* ``Mstar``: stellar mass in Msun/h
+- *[float]* ``feff``: star formation efficiency 
+- *[float]* ``fg``: fraction of the gas mass given by the cosmological ratio that a halo can retain in the presence of the UV background
+- *[float]* ``zreion``: redshift when cell where galaxy is located became reionized
+- *[float]* ``photHI_bg``: photoionization rate in s^-1 when cell where galaxy is located became reionized
+  
+An example for a reading routines for the output files can be found in the analysis program linked below.
+  
 Analysis
 ========
 
