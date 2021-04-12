@@ -177,6 +177,7 @@ Horizontal
 ----------
 
 Each galaxy has the following structure:
+
 - *[float]* ``scalefactor``: scale factor 
 - *[float]* ``pos[3]``: x, y, z coordinates in the simulation box in comoving Mpc/h
 - *[float]* ``vel[3]``: velocities in x, z, z direction in physical km/s (peculiar)
@@ -200,6 +201,7 @@ Vertical
 --------
 
 Each galaxy has the following structure:
+
 - *[float]* ``scalefactor``: scale factor 
 - *[float]* ``pos[3]``: x, y, z coordinates in the simulation box in comoving Mpc/h
 - *[float]* ``vel[3]``: velocities in x, z, z direction in physical km/s (peculiar)
