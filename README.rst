@@ -80,14 +80,11 @@ Adjust the paths of the FFTW libraries if they are not enabled by default or unc
 
 Note that the ``OUTPUTSNAPNUMBER`` needs to be adjusted to the number of snapshots of the merger trees, i.e. if the merger trees start at snap ``0`` and end at snap ``i``, then set ``OUTPUTSNAPNUMBER = i`` while ``endSnapshot = i+1`` in the parameter file (see below).
 
-.. role:: red
-.. role:: blue
-
 Define necessary preprocessor flags:
 
-1. None : ``ASTRAEUS`` is run with the latest star formation, supernovae and radiative feedback descriptions but does NOT follow metal and dust mass reservoirs (see `Hutter et al. (2023a) <https://ui.adsabs.harvard.edu/abs/2023MNRAS.tmp.2201H/abstract>`__)
-2. $${\color{red} ``WITHMETALS``}$$ : ``ASTRAEUS`` is run with the latest star formation, supernovae and radiative feedback descriptions and follows metal and dust mass reservoirs (see `Hutter et al. (2023a) <https://ui.adsabs.harvard.edu/abs/2023MNRAS.tmp.2201H/abstract>`__)
-3. $${\color{blue} ``FIRST``}$$ : Same as `None` but format of output corresponds to that used for the simulations described in `Hutter et al. (2021) <https://ui.adsabs.harvard.edu/abs/2021MNRAS.tmp..610H/abstract>`__ (backwards compatible)
+1. None : ``astraeus`` is run with the latest star formation, supernovae and radiative feedback descriptions but does NOT follow metal and dust mass reservoirs (see `Hutter et al. (2023a) <https://ui.adsabs.harvard.edu/abs/2023MNRAS.tmp.2201H/abstract>`__)
+2. ``WITHMETALS`` : ``astraeus`` is run with the latest star formation, supernovae and radiative feedback descriptions and follows metal and dust mass reservoirs (see `Hutter et al. (2023a) <https://ui.adsabs.harvard.edu/abs/2023MNRAS.tmp.2201H/abstract>`__)
+3. ``FIRST`` : Same as `None` but format of output corresponds to that used for the simulations described in `Hutter et al. (2021) <https://ui.adsabs.harvard.edu/abs/2021MNRAS.tmp..610H/abstract>`__ (backwards compatible)
 
 Execution
 ---------
@@ -201,77 +198,77 @@ Horizontal
 
 Each galaxy has the following structure:
 
-- *[float]* :blue:` ``scalefactor`` `: scale factor 
-- *[float]* :blue:` ``pos[3]`` `: x, y, z coordinates in the simulation box in comoving Mpc/h
-- *[float]* :blue:` ``vel[3]`` `: velocities in x, z, z direction in physical km/s (peculiar)
-- *[float]* :blue:` ``Mvir`` `: halo mass in Msun/h
-- *[float]* :blue:` ``Mvir_prog`` `: sum of all progenitor halo masses in Msun/h
-- *[float]* :blue:` ``Rvir`` `: virial radius in comoving kpc/h
-- *[float]* :blue:` ``velDisp`` `: velocity dispersion in physical km/s
-- *[float]* :blue:` ``velMax`` `: maximum circular velocity in physical km/s
-- *[float]* :blue:` ``spin`` `: halo spin parameter
-- *[float]* :blue:` ``scalefactorLastMajorMerger`` `: scale factor of the last major merger (mass ratio > 0.3)
-- *[float]* :blue:` ``MgasIni`` `: initial gas mass (after gas accretion and radiative feedback, before star formation and supernoave feedback) in Msun/h
-- *[float]* ``fracMgasMer`` : fraction of the initial gas mass gained by mergers (i.e. not accretion)
-- *[float]* ``MgasNew`` : gas mass returned from dying stars in Msun/h
-- *[float]* ``MgasEj`` : ejected gas mass in Msun/h
-- *[float]* :blue:` ``Mgas`` `: final gas mass (after star formation and supernovae feedback) in Msun/h
-- *[float]* :blue:` ``Mstar`` `: stellar mass in Msun/h
+- *[float]* ``scalefactor``: scale factor 
+- *[float]* ``pos[3]``: x, y, z coordinates in the simulation box in comoving Mpc/h
+- *[float]* ``vel[3]``: velocities in x, z, z direction in physical km/s (peculiar)
+- *[float]* ``Mvir``: halo mass in Msun/h
+- *[float]* ``Mvir_prog``: sum of all progenitor halo masses in Msun/h
+- *[float]* ``Rvir``: virial radius in comoving kpc/h
+- *[float]* ``velDisp``: velocity dispersion in physical km/s
+- *[float]* ``velMax``: maximum circular velocity in physical km/s
+- *[float]* ``spin``: halo spin parameter
+- *[float]* ``scalefactorLastMajorMerger``: scale factor of the last major merger (mass ratio > 0.3)
+- *[float]* ``MgasIni``: initial gas mass (after gas accretion and radiative feedback, before star formation and supernoave feedback) in Msun/h
+- *[float, not FIRST]* ``fracMgasMer`` : fraction of the initial gas mass gained by mergers (i.e. not accretion)
+- *[float, not FIRST]* ``MgasNew`` : gas mass returned from dying stars in Msun/h
+- *[float, not FIRST]* ``MgasEj`` : ejected gas mass in Msun/h
+- *[float]* ``Mgas``: final gas mass (after star formation and supernovae feedback) in Msun/h
+- *[float]* ``Mstar``: stellar mass in Msun/h
 - *[float]*  ``fesc`` : escape fraction of hydrogen ionising photons
 - *[float]*  ``Nion`` : intrinsic ionising emissivity in s^-1
 - *[float]*  ``fej`` : fraction of gas mass to be turned into stars to expel all gas
-- *[float]* :blue:` ``feff`` `: star formation efficiency 
-- *[float]* :blue:` ``fg`` `: fraction of the gas mass given by the cosmological ratio that a halo can retain in the presence of the UV background
-- *[float]* :blue:` ``zreion`` `: redshift when cell where galaxy is located became reionized
-- *[float]* :blue:` ``photHI_bg`` `: photoionization rate in s^-1 when cell where galaxy is located became reionized
-- *[float]* :blue:` ``stellarmasshistory[OUTPUTSNAPNUMBER]`` `: star formation history with each entry in the array listing the stellar mass form at the respective snapshot (redshift)
-- *[float]* :red:` ``Mmetal[3]`` `: final metal mass (after star formation and supernovae feedback) in Msun/h (0 = all metals, 1 = oxygen, 2 = iron)
-- *[float]* :red:` ``MmetalIni[3]`` `: initial metal mass (after gas accretion and radiative feedback, before star formation and supernoave feedback) in Msun/h
-- *[float]* :red:` ``MmetalNew[3]`` `: metal mass returned from dying stars in Msun/h
-- *[float]* :red:` ``fracMmetalMer[3]`` `: fraction of the initial metal mass gained by mergers (i.e. not accretion)
-- *[float]* :red:` ``MmetalEj[3]`` `: ejected metal mass in Msun/h
-- *[float]* :red:` ``metalmasshistory[OUTPUTSNAPNUMBER]`` `: metallicity history with each entry in the array listing the metallicity at the respective snapshot (redshift)
-- *[float]* :red:` ``Mdust`` `: final dust mass (after star formation and supernovae feedback) in Msun/h (0 = all metals, 1 = oxygen, 2 = iron)
+- *[float]* ``feff``: star formation efficiency 
+- *[float]* ``fg``: fraction of the gas mass given by the cosmological ratio that a halo can retain in the presence of the UV background
+- *[float]* ``zreion``: redshift when cell where galaxy is located became reionized
+- *[float]* ``photHI_bg``: photoionization rate in s^-1 when cell where galaxy is located became reionized
+- *[float]* ``stellarmasshistory[OUTPUTSNAPNUMBER]``: star formation history with each entry in the array listing the stellar mass form at the respective snapshot (redshift)
+- *[float, WITHMETALS]* ``Mmetal[3]``: final metal mass (after star formation and supernovae feedback) in Msun/h (0 = all metals, 1 = oxygen, 2 = iron)
+- *[float, WITHMETALS]* ``MmetalIni[3]``: initial metal mass (after gas accretion and radiative feedback, before star formation and supernoave feedback) in Msun/h
+- *[float, WITHMETALS]* ``MmetalNew[3]``: metal mass returned from dying stars in Msun/h
+- *[float, WITHMETALS]* ``fracMmetalMer[3]``: fraction of the initial metal mass gained by mergers (i.e. not accretion)
+- *[float, WITHMETALS]* ``MmetalEj[3]``: ejected metal mass in Msun/h
+- *[float, WITHMETALS]* ``metalmasshistory[OUTPUTSNAPNUMBER]``: metallicity history with each entry in the array listing the metallicity at the respective snapshot (redshift)
+- *[float, WITHMETALS]* ``Mdust``: final dust mass (after star formation and supernovae feedback) in Msun/h (0 = all metals, 1 = oxygen, 2 = iron)
 
 Vertical
 --------
 
 Each galaxy has the following structure:
 
-- *[integer]* :blue:` ``localID`` `: ID of the galaxy (only unique within a tree)
-- *[integer]* :blue:` ``localDescID`` `: ID of the descendent of the galaxy
-- *[integer]* :blue:` ``numProg`` `: number of the galaxy's progenitors
-- *[integer]* :blue:` ``snapnumber`` `: number of the snapshot (increases with decreasing redshift)
+- *[integer]* :blue:` ``localID``: ID of the galaxy (only unique within a tree)
+- *[integer]* :blue:` ``localDescID``: ID of the descendent of the galaxy
+- *[integer]* :blue:` ``numProg``: number of the galaxy's progenitors
+- *[integer]* :blue:` ``snapnumber``: number of the snapshot (increases with decreasing redshift)
 
-- *[float]* :blue:` ``scalefactor`` `: scale factor 
-- *[float]* :blue:` ``pos[3]`` `: x, y, z coordinates in the simulation box in comoving Mpc/h
-- *[float]* :blue:` ``vel[3]`` `: velocities in x, z, z direction in physical km/s (peculiar)
-- *[float]* :blue:` ``Mvir`` `: halo mass in Msun/h
-- *[float]* :blue:` ``Mvir_prog`` `: sum of all progenitor halo masses in Msun/h
-- *[float]* :blue:` ``Rvir`` `: virial radius in comoving kpc/h
-- *[float]* :blue:` ``velDisp`` `: velocity dispersion in physical km/s
-- *[float]* :blue:` ``velMax`` `: maximum circular velocity in physical km/s
-- *[float]* :blue:` ``spin`` `: halo spin parameter
-- *[float]* :blue:` ``scalefactorLastMajorMerger`` `: scale factor of the last major merger (mass ratio > 0.3)
-- *[float]* :blue:` ``MgasIni`` `: initial gas mass (after gas accretion and radiative feedback, before star formation and supernoave feedback) in Msun/h
-- *[float]* ``fracMgasMer`` : fraction of the initial gas mass gained by mergers (i.e. not accretion)
-- *[float]* ``MgasNew`` : gas mass returned from dying stars in Msun/h
-- *[float]* ``MgasEj`` : ejected gas mass in Msun/h
-- *[float]* :blue:` ``Mgas`` `: final gas mass (after star formation and supernovae feedback) in Msun/h
-- *[float]* :blue:` ``Mstar`` `: stellar mass in Msun/h
+- *[float]* ``scalefactor``: scale factor 
+- *[float]* ``pos[3]``: x, y, z coordinates in the simulation box in comoving Mpc/h
+- *[float]* ``vel[3]``: velocities in x, z, z direction in physical km/s (peculiar)
+- *[float]* ``Mvir``: halo mass in Msun/h
+- *[float]* ``Mvir_prog``: sum of all progenitor halo masses in Msun/h
+- *[float]* ``Rvir``: virial radius in comoving kpc/h
+- *[float]* ``velDisp``: velocity dispersion in physical km/s
+- *[float]* ``velMax``: maximum circular velocity in physical km/s
+- *[float]* ``spin``: halo spin parameter
+- *[float]* ``scalefactorLastMajorMerger``: scale factor of the last major merger (mass ratio > 0.3)
+- *[float]* ``MgasIni``: initial gas mass (after gas accretion and radiative feedback, before star formation and supernoave feedback) in Msun/h
+- *[float, not FIRST]* ``fracMgasMer`` : fraction of the initial gas mass gained by mergers (i.e. not accretion)
+- *[float, not FIRST]* ``MgasNew`` : gas mass returned from dying stars in Msun/h
+- *[float, not FIRST]* ``MgasEj`` : ejected gas mass in Msun/h
+- *[float]* ``Mgas``: final gas mass (after star formation and supernovae feedback) in Msun/h
+- *[float]* ``Mstar``: stellar mass in Msun/h
 - *[float]*  ``fesc`` : escape fraction of hydrogen ionising photons
 - *[float]*  ``Nion`` : intrinsic ionising emissivity in 1/s
 - *[float]*  ``fej`` : fraction of gas mass to be turned into stars to expel all gas
-- *[float]* :blue:` ``feff`` `: star formation efficiency 
-- *[float]* :blue:` ``fg`` `: fraction of the gas mass given by the cosmological ratio that a halo can retain in the presence of the UV background
-- *[float]* :blue:` ``zreion`` `: redshift when cell where galaxy is located became reionized
-- *[float]* :blue:` ``photHI_bg`` `: photoionization rate in s^-1 when cell where galaxy is located became reionized
-- *[float]* :red:` ``Mmetal[3]`` `: final metal mass (after star formation and supernovae feedback) in Msun/h (0 = all metals, 1 = oxygen, 2 = iron)
-- *[float]* :red:` ``MmetalIni[3]`` `: initial metal mass (after gas accretion and radiative feedback, before star formation and supernoave feedback) in Msun/h
-- *[float]* :red:` ``MmetalNew[3]`` `: metal mass returned from dying stars in Msun/h
-- *[float]* :red:` ``fracMmetalMer[3]`` `: fraction of the initial metal mass gained by mergers (i.e. not accretion)
-- *[float]* :red:` ``MmetalEj[3]`` `: ejected metal mass in Msun/h
-- *[float]* :red:` ``Mdust`` `: final dust mass (after star formation and supernovae feedback) in Msun/h (0 = all metals, 1 = oxygen, 2 = iron)
+- *[float]* ``feff``: star formation efficiency 
+- *[float]* ``fg``: fraction of the gas mass given by the cosmological ratio that a halo can retain in the presence of the UV background
+- *[float]* ``zreion``: redshift when cell where galaxy is located became reionized
+- *[float]* ``photHI_bg``: photoionization rate in s^-1 when cell where galaxy is located became reionized
+- *[float, WITHMETALS]* ``Mmetal[3]``: final metal mass (after star formation and supernovae feedback) in Msun/h (0 = all metals, 1 = oxygen, 2 = iron)
+- *[float, WITHMETALS]* ``MmetalIni[3]``: initial metal mass (after gas accretion and radiative feedback, before star formation and supernoave feedback) in Msun/h
+- *[float, WITHMETALS]* ``MmetalNew[3]``: metal mass returned from dying stars in Msun/h
+- *[float, WITHMETALS]* ``fracMmetalMer[3]``: fraction of the initial metal mass gained by mergers (i.e. not accretion)
+- *[float, WITHMETALS]* ``MmetalEj[3]``: ejected metal mass in Msun/h
+- *[float, WITHMETALS]* ``Mdust``: final dust mass (after star formation and supernovae feedback) in Msun/h (0 = all metals, 1 = oxygen, 2 = iron)
   
 An example for a reading routines for the output files can be found in the analysis program linked below. The corresponding C structs can be found in ``src/outgal.h``.
   
