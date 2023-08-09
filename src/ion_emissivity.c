@@ -5,6 +5,7 @@
 #include <assert.h>
 #include <math.h>
 
+#include "const.h"
 #include "utils.h"
 #include "dconfObj.h"
 #include "gal_gtree.h"
@@ -15,6 +16,9 @@ double get_nion_for_model(gal_t *thisGal, dconfObj_t simParam)
 {
   double nion_sps = get_nion_sps(thisGal, simParam);
   double fesc = get_fesc(thisGal, simParam);
+  
+  thisGal->Nion = 1.e-50 * nion_sps;
+  thisGal->fesc = fesc;
     
   return fesc * nion_sps;
 }
@@ -68,13 +72,10 @@ double get_nion_S99(gal_t *thisGal, float *times)
 
 double nion_S99(float age)
 {
-  double MyrInSec = 3.1536e13;
-  double MyrInSec_inv = 3.1709792e-14;
-
   if(age < 3.16*MyrInSec)
     age = 3.16*MyrInSec;
   
-  double nion = 2.18e47 * pow(0.5 * age * MyrInSec_inv, -3.92);
+  double nion = 2.18e47 * pow(0.5 * age * secInMyr, -3.92);
 
   return nion;
 }
@@ -95,14 +96,11 @@ double get_nion_BPASS(gal_t *thisGal, float *times)
 }
 
 double nion_BPASS(float age)
-{  
-  double MyrInSec = 3.1536e13;
-  double MyrInSec_inv = 3.1709792e-14;
-  
+{
   if(age < 3.16*MyrInSec)
     age = 3.16*MyrInSec;
   
-  double nion = 9.091836e46 * pow(0.5 * age * MyrInSec_inv, -2.28);
+  double nion = 9.091836e46 * pow(0.5 * age * secInMyr, -2.28);
 
   return nion;
 }
@@ -138,7 +136,6 @@ double *get_corrFactor_nion(dconfObj_t simParam)
 
 double *get_corrFactor_nion_S99(int endSnap, float *times)
 {
-  float MyrInSec = 3.1536e13;
   float t0 = 2. * MyrInSec;
   float tbreak = 3.16 * MyrInSec;
   float exponent = -3.92;
@@ -150,7 +147,6 @@ double *get_corrFactor_nion_S99(int endSnap, float *times)
 
 double *get_corrFactor_nion_BPASS(int endSnap, float *times)
 {
-  float MyrInSec = 3.1536e13;
   float t0 = 2. * MyrInSec;
   float tbreak = 3.16 * MyrInSec;
   float exponent = -2.28;

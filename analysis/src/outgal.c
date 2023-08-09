@@ -35,13 +35,40 @@ outgal_t *initOutGalTree()
   newOutGal->velMax = 0.;
   newOutGal->spin = 0.;
   newOutGal->scalefactorLastMajorMerger = 0.;
-  newOutGal->Mgas = 0.;
+  
   newOutGal->MgasIni = 0.;
+#ifndef FIRST
+  newOutGal->fracMgasMer = 0.;
+#endif
+#if defined WITHMETALS
+  newOutGal->MgasNew = 0.;
+  newOutGal->MgasEj = 0.;
+#endif
+  newOutGal->Mgas = 0.;
   newOutGal->Mstar = 0.;
+  
+#ifndef FIRST
+  newOutGal->fesc = 0.;
+  newOutGal->Nion = 0.;
+  newOutGal->fej = 0.;
+#endif
   newOutGal->feff = 0.;  
   newOutGal->fg = 0.;
   newOutGal->zreion = 0.;
   newOutGal->photHI_bg = 0.;
+  
+#if defined WITHMETALS
+  for(int i=0; i<3; i++)
+  {
+    newOutGal->Mmetal[i] = 0.;
+    newOutGal->MmetalIni[i] = 0.;
+    newOutGal->MmetalNew[i] = 0.;
+    newOutGal->fracMmetalMer[i] = 0.;
+    newOutGal->MmetalEj[i] = 0.;
+  }
+  
+  newOutGal->Mdust = 0.;
+#endif  
   
   return newOutGal;
 }

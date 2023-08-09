@@ -29,6 +29,20 @@ The source code of this ``ASTRAEUS`` analysis program is downloaded when cloning
 
 This will download the code and a test case from the github directory and compile the source code.
 
+Common.mk
+---------
+
+Adjust the paths of the FFTW libraries if they are not enabled by default or uncomment those lines and remove FFTW flags and links. 
+
+.. role:: red
+.. role:: blue
+
+Use the same preprocessor flags as you have used when you ran ``ASTRAEUS``:
+
+1. None
+2. :red:` ``WITHMETALS`` `
+3. :blue:` ``FIRST`` `
+
 Execution
 ---------
 
@@ -89,7 +103,7 @@ Parameter File
 **[2dHistogram]** *This option computes the average history (time evolution) of a galaxy property as a function of two chosen galaxy properties (hereafter: binned properties)*
 
 - ``num_2D_history`` = *[integer]* number of 2D histograms to compute or the length of the lists below
-- ``property_2D_history`` = *[list of properties]* property whose redshift evolution (history) should be obtained; possible options: Mvir, MgasIni, Mgas, fg, Mstar, SFR, photHI_bg, zreion, DENS, ION
+- ``property_2D_history`` = *[list of properties]* property whose redshift evolution (history) should be obtained; possible options: Mvir, MvirProg, MgasIni, Mgas, fg, fej, Mstar, SFR, MUV, photHI_bg, Nion, fescFej, zreion, DENS, XHI, GRIDMUV
 - ``binProperty1_2D_history`` = *[list of properties]* first binned property across which to bin property
 - ``binProperty2_2D_history`` = *[list of properties]* second binned property across which to bin property
 - ``binsInLog1_2D_history`` = *[list of integers]* identifier whether binning of the first binned property is logarithmic [value: 1] or linear [value: 0]
@@ -100,7 +114,7 @@ Parameter File
 **[1dHistogram]** *This option computes the average history (time evolution) of a galaxy property as a function of one chosen galaxy property (hereafter: binned property)*
 
 - ``num_1D_history`` = *[integer]* number of 1D histograms to compute or the length of the lists below
-- ``property_1D_history`` = *[list of properties]* property whose redshift evolution (history) should be obtained; possible options: Mvir, MgasIni, Mgas, fg, Mstar, SFR, photHI_bg, zreion, DENS, ION
+- ``property_1D_history`` = *[list of properties]* property whose redshift evolution (history) should be obtained; possible options: Mvir, MvirProg, MgasIni, Mgas, fg, fej, Mstar, SFR, MUV, photHI_bg, Nion, fescFej, zreion, DENS, XHI, GRIDMUV
 - ``binProperty_1D_history`` = *[list of properties]* binned property across which to bin property
 - ``binsInLog_1D_history`` = *[list of integers]* identifier whether binning of the binned property is logarithmic [value: 1] or linear [value: 0]
 - ``binsPerMag_1D_history`` = *[list of integers]* number of bins per magnitude when binning the binned property
@@ -108,7 +122,7 @@ Parameter File
 **[2dHistogramHistoryMedian]** *This option computes the median history (time evolution) of a galaxy property as a function of two chosen galaxy properties (hereafter: binned properties)*
 
 - ``num_2D_history_median`` = *[integer]* number of 2D histograms to compute or the length of the lists below
-- ``property_2D_history_median`` = *[list of properties]* property whose mean value should be obtained; possible options: Mvir, MgasIni, Mgas, fg, Mstar, SFR, photHI_bg, zreion, DENS, ION
+- ``property_2D_history_median`` = *[list of properties]* property whose mean value should be obtained; possible options: Mvir, MvirProg, MgasIni, Mgas, fg, fej, Mstar, SFR, MUV, photHI_bg, Nion, fescFej, zreion, DENS, XHI, GRIDMUV
 - ``binProperty1_2D_history_median`` = *[list of properties]* first binned property across which to bin property
 - ``binProperty2_2D_history_median`` = *[list of properties]* second binned property across which to bin property
 - ``binsInLog1_2D_history_median`` = *[list of integers]* identifier whether binning of the first binned property is logarithmic [value: 1] or linear [value: 0]
@@ -119,7 +133,7 @@ Parameter File
 **[3dHistogramValue]** *This option computes the mean value of a galaxy property as a function of three chosen galaxy properties (hereafter: binned properties)*
 
 - ``num_3D_value`` = *[integer]* number of 3D histograms to compute or the length of the lists below
-- ``property_3D_value`` = *[list of properties]* property whose mean value should be obtained; possible options: Mvir, MgasIni, Mgas, fg, Mstar, SFR, photHI_bg, zreion, DENS, ION
+- ``property_3D_value`` = *[list of properties]* property whose mean value should be obtained; possible options: Mvir, MvirProg, MgasIni, Mgas, fg, fej, Mstar, SFR, MUV, photHI_bg, Nion, fescFej, zreion, DENS, XHI, GRIDMUV
 - ``binProperty1_3D_mapLowLimit`` = *[list of floats]* lower limit of respective property
 - ``binProperty1_3D_mapUpLimit`` = *[list of floats]* upper limit of respective property
 - ``binProperty1_3D_value`` = *[list of properties]* first binned property across which to bin property
@@ -135,7 +149,7 @@ Parameter File
 **[2dHistogramValue]** *This option computes the mean value of a galaxy property as a function of two chosen galaxy properties (hereafter: binned properties)*
 
 - ``num_2D_value`` = *[integer]* number of 2D histograms to compute or the length of the lists below
-- ``property_2D_value`` =  *[list of properties]* property whose mean value should be obtained; possible options: Mvir, MgasIni, Mgas, fg, Mstar, SFR, photHI_bg, zreion, DENS, ION
+- ``property_2D_value`` =  *[list of properties]* property whose mean value should be obtained; possible options: Mvir, MvirProg, MgasIni, Mgas, fg, fej, Mstar, SFR, MUV, photHI_bg, Nion, fescFej, zreion, DENS, XHI, GRIDMUV
 - ``binProperty1_2D_mapLowLimit`` = *[list of floats]* lower limit of respective property
 - ``binProperty1_2D_mapUpLimit`` = *[list of floats]* upper limit of respective property
 - ``binProperty1_2D_value`` = *[list of properties]* first binned property across which to bin property
@@ -148,9 +162,9 @@ Parameter File
 **[1dHistogramValue]** *This option computes the mean value of a galaxy property as a function of achosen galaxy property (hereafter: binned property)*
 
 - ``num_1D_value`` = *[integer]* number of 1D histograms to compute or the length of the lists below
--``binProperty1_1D_mapLowLimit`` = *[list of floats]* lower limit of respective property
+- ``binProperty1_1D_mapLowLimit`` = *[list of floats]* lower limit of respective property
 - ``binProperty1_1D_mapUpLimit`` = *[list of floats]* upper limit of respective property
-- ``property_1D_value`` =  *[list of properties]* property whose mean value should be obtained; possible options: Mvir, MgasIni, Mgas, fg, Mstar, SFR, photHI_bg, zreion, DENS, ION
+- ``property_1D_value`` =  *[list of properties]* property whose mean value should be obtained; possible options: Mvir, MvirProg, MgasIni, Mgas, fg, fej, Mstar, SFR, MUV, photHI_bg, Nion, fescFej, zreion, DENS, XHI, GRIDMUV
 - ``binProperty_1D_value`` = *[list of properties]* binned property across which to bin property
 - ``binsInLog_1D_value`` = *[list of integers]* identifier whether binning of the first binned property is logarithmic [value: 1] or linear [value: 0]
 - ``binsPerMag_1D_value`` = *[list of integers]* number of bins per magnitude when binning the first binned property
@@ -158,7 +172,7 @@ Parameter File
 **[2dHistogramMedian]** *This option computes the median value of a galaxy property as a function of two chosen galaxy properties (hereafter: binned properties)*
 
 - ``num_2D_median`` = *[integer]* number of 2D histograms to compute or the length of the lists below
-- ``property_2D_median`` = *[list of properties]* property whose mean value should be obtained; possible options: Mvir, MgasIni, Mgas, fg, Mstar, SFR, photHI_bg, zreion, DENS, ION
+- ``property_2D_median`` = *[list of properties]* property whose mean value should be obtained; possible options: Mvir, MvirProg, MgasIni, Mgas, fg, fej, Mstar, SFR, MUV, photHI_bg, Nion, fescFej, zreion, DENS, XHI, GRIDMUV
 - ``binProperty1_2D_median_mapLowLimit`` = *[list of floats]* lower limit of respective property
 - ``binProperty1_2D_median_mapUpLimit`` = *[list of floats]* upper limit of respective property
 - ``binProperty1_2D_median`` = *[list of properties]* first binned property across which to bin property
@@ -180,11 +194,23 @@ Parameter File
 
 **[1dnumDensHistogram]** *This option computes the number density of galaxies as a function of one chosen galaxy properties (hereafter: binned property)*
 
-- ``num_1D`` = *[integer]* number of 1D  number density histograms to compute or the length of the lists below
+- ``num_1D`` = *[integer]* number of 1D number density histograms to compute or the length of the lists below
 - ``binProperty_1D`` = *[list of properties]* binned property across which to bin property
 - ``binsInLog_1D`` = *[list of integers]* identifier whether binning of the binned property is logarithmic [value: 1] or linear [value: 0]
 - ``binsPerMag_1D`` = *[list of integers]* number of bins per magnitude when binning the binned property
 - ``cumulative`` = *[list of integers]* identifier whether 1D histogram should be cumulative
+
+**[GalaxyPairs]** *This option computes the average history (time evolution) of a galaxy property for galaxy pairs fulfilling two galaxy selection criteria (hereafter: selection properties) and maximum distance*
+[GalaxyPairs]
+- ``num_galaxyPairs`` = *[integer]* number of galaxy pair statistics
+- ``selectionProperty1`` = *[list of properties]* first selection property across which to bin property
+- ``minSelectionProperty1`` = *[list of double]* minimum value of first selection property
+- ``maxSelectionProperty1`` = *[list of double]* maximum value of first selection property
+- ``selectionProperty2`` = *[list of properties]* second selection property across which to bin property
+- ``minSelectionProperty2`` = *[list of double]* minimum value of second selection property
+- ``maxSelectionProperty2`` = *[list of double]* maximum value of second selection property
+- ``maxDistanceInComMpc`` = *[list of doubles]* distance between galaxy pair in comoving Mpc
+- ``propertyWithHistory_galaxyPairs`` = *[list of properties]* property whose history should be tracked; possible options: Mvir, MvirProg, MgasIni, Mgas, fg, fej, Mstar, SFR, MUV, photHI_bg, Nion, fescFej, zreion, DENS, XHI, GRIDMUV
 
 **[AnalysisEvolution]** *This option can be enabled to generate the history (time evolution) of a galaxy property as a function of one chosen galaxy property (herafter: binned property). This analysis seems similar to 1dHistogramm, however instead of following the total history of each galaxy at the chosen snapshot (i.e. summing the properties of all progenitors if a galaxy has multiple progenitors), this option reads in galaxies at all snapshots and derives histories*
 
@@ -193,7 +219,7 @@ Parameter File
 **[1dHistogramEvolution]** *This part is only relevant when ``trackEvolution=1``*
 
 - ``num_1D_evolution`` = *[integer]* number of number density histograms to compute or the length of the lists below
-- ``property_1D_evolution`` = *[list of properties]* property whose redshift evolution (history) should be obtained; possible options: Mvir, MgasIni, Mgas, fg, Mstar, SFR, photHI_bg, zreion, DENS, ION
+- ``property_1D_evolution`` = *[list of properties]* property whose redshift evolution (history) should be obtained; possible options: Mvir, MvirProg, MgasIni, Mgas, fg, fej, Mstar, SFR, MUV, photHI_bg, Nion, fescFej, zreion, DENS, XHI, GRIDMUV
 - ``binProperty_1D_evolution`` = *[list of properties]* binned property across which to bin property
 - ``binsInLog_1D_evolution`` = *[list of integers]* identifier whether binning of the binned property is logarithmic [value: 1] or linear [value: 0]
 - ``binsPerMag_1D_evolution`` = *[list of integers]* number of bins per magnitude when binning the binned property

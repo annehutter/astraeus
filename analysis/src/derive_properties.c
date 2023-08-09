@@ -195,6 +195,28 @@ double *getProperty(dconfObj_t simParam, outgtree_t **treeList, int numTrees, in
         if(thisGal.photHI_bg > tmpProperty[listToPutIn][thisGal.snapnumber])
           tmpProperty[listToPutIn][thisGal.snapnumber] = thisGal.photHI_bg;
       }
+#if defined WITHMETALS
+      if(strcmp(propertyName,"Mmetal") == 0)
+      {
+        tmpProperty[listToPutIn][thisGal.snapnumber] += invHubble * thisGal.Mmetal[0];
+      }
+      if(strcmp(propertyName,"MmetalIni") == 0)
+      {
+        tmpProperty[listToPutIn][thisGal.snapnumber] += invHubble * thisGal.MmetalIni[0];
+      }
+      if(strcmp(propertyName,"MmetalNew") == 0)
+      {
+        tmpProperty[listToPutIn][thisGal.snapnumber] += invHubble * thisGal.MmetalNew[0];
+      }
+      if(strcmp(propertyName,"MmetalEj") == 0)
+      {
+        tmpProperty[listToPutIn][thisGal.snapnumber] += invHubble * thisGal.MmetalEj[0];
+      }
+      if(strcmp(propertyName,"Mdust") == 0)
+      {
+        tmpProperty[listToPutIn][thisGal.snapnumber] += invHubble * thisGal.Mdust;
+      }
+#endif
       
       if(gal < treeList[tree]->numGal - 1)
         gal++;
@@ -402,7 +424,28 @@ double *getPropertyHistory(dconfObj_t simParam, outgtree_t **treeList, int numTr
         if(thisGal.photHI_bg > tmpProperty[listToPutIn][thisGal.snapnumber])
           tmpProperty[listToPutIn][thisGal.snapnumber] = thisGal.photHI_bg;
       }
-      
+#if defined WITHMETALS
+      if(strcmp(propertyName,"Mmetal") == 0)
+      {
+        tmpProperty[listToPutIn][thisGal.snapnumber] += invHubble * thisGal.Mmetal[0];
+      }
+      if(strcmp(propertyName,"MmetalIni") == 0)
+      {
+        tmpProperty[listToPutIn][thisGal.snapnumber] += invHubble * thisGal.MmetalIni[0];
+      }
+      if(strcmp(propertyName,"MmetalNew") == 0)
+      {
+        tmpProperty[listToPutIn][thisGal.snapnumber] += invHubble * thisGal.MmetalNew[0];
+      }
+      if(strcmp(propertyName,"MmetalEj") == 0)
+      {
+        tmpProperty[listToPutIn][thisGal.snapnumber] += invHubble * thisGal.MmetalEj[0];
+      }
+      if(strcmp(propertyName,"Mdust") == 0)
+      {
+        tmpProperty[listToPutIn][thisGal.snapnumber] += invHubble * thisGal.Mdust;
+      }
+#endif
       if(gal < treeList[tree]->numGal - 1)
         gal++;
       else
@@ -622,6 +665,28 @@ double *getProperty_endSnap(dconfObj_t simParam, outgtree_t **treeList, int numT
         if(endGal.photHI_bg > tmpProperty[listToPutIn][thisGal.snapnumber])
           tmpProperty[listToPutIn][thisGal.snapnumber] = endGal.photHI_bg;
       }
+#if defined WITHMETALS
+      if(strcmp(propertyName,"Mmetal") == 0)
+      {
+        tmpProperty[listToPutIn][thisGal.snapnumber] += invHubble * endGal.Mmetal[0];
+      }
+      if(strcmp(propertyName,"MmetalIni") == 0)
+      {
+        tmpProperty[listToPutIn][thisGal.snapnumber] += invHubble * endGal.MmetalIni[0];
+      }
+      if(strcmp(propertyName,"MmetalNew") == 0)
+      {
+        tmpProperty[listToPutIn][thisGal.snapnumber] += invHubble * endGal.MmetalNew[0];
+      }
+      if(strcmp(propertyName,"MmetalEj") == 0)
+      {
+        tmpProperty[listToPutIn][thisGal.snapnumber] += invHubble * endGal.MmetalEj[0];
+      }
+      if(strcmp(propertyName,"Mdust") == 0)
+      {
+        tmpProperty[listToPutIn][thisGal.snapnumber] += invHubble * endGal.Mdust;
+      }
+#endif
       
       if(gal < treeList[tree]->numGal - 1)
         gal++;

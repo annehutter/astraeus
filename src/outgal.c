@@ -32,16 +32,46 @@ outgalsnap_t *initOutGalSnap()
   newOutGal->velMax = 0.;
   newOutGal->spin = 0.;
   newOutGal->scalefactorLastMajorMerger = 0.;
-  newOutGal->Mgas = 0.;
+  
   newOutGal->MgasIni = 0.;
+#ifndef FIRST
+  newOutGal->fracMgasMer = 0.;
+#endif
+#if defined WITHMETALS
+  newOutGal->MgasNew = 0.;
+  newOutGal->MgasEj = 0.;
+#endif
+  newOutGal->Mgas = 0.;
   newOutGal->Mstar = 0.;
-  newOutGal->feff = 0.;  
+  
+#ifndef FIRST
+  newOutGal->fesc = 0.;
+  newOutGal->Nion = 0.;
+  newOutGal->fej = 0.;
+#endif
+  newOutGal->feff = 0.;
   newOutGal->fg = 0.;
   newOutGal->zreion = 0.;  
   newOutGal->photHI_bg = 0.;  
 
   for(int i=0; i<OUTPUTSNAPNUMBER; i++)
     newOutGal->stellarmasshistory[i] = 0.;
+
+#if defined WITHMETALS
+  for(int i=0; i<3; i++)
+  {
+    newOutGal->Mmetal[i] = 0.;
+    newOutGal->MmetalIni[i] = 0.;
+    newOutGal->MmetalNew[i] = 0.;
+    newOutGal->fracMmetalMer[i] = 0.;
+    newOutGal->MmetalEj[i] = 0.;
+  }
+
+  for(int i=0; i<OUTPUTSNAPNUMBER; i++)
+    newOutGal->metalmasshistory[i] = 0.;
+  
+  newOutGal->Mdust = 0.;
+#endif
 
   return newOutGal;
 }
@@ -62,16 +92,46 @@ void initOutGalSnapWithoutAllocation(outgalsnap_t *newOutGal)
   newOutGal->velMax = 0.;
   newOutGal->spin = 0.;
   newOutGal->scalefactorLastMajorMerger = 0.;
-  newOutGal->Mgas = 0.;
+  
   newOutGal->MgasIni = 0.;
+#ifndef FIRST
+  newOutGal->fracMgasMer = 0.;
+#endif
+#if defined WITHMETALS
+  newOutGal->MgasNew = 0.;
+  newOutGal->MgasEj = 0.;
+#endif
+  newOutGal->Mgas = 0.;
   newOutGal->Mstar = 0.;
-  newOutGal->feff = 0.;  
+  
+#ifndef FIRST
+  newOutGal->fesc = 0.;
+  newOutGal->Nion = 0.;
+  newOutGal->fej = 0.;
+#endif
+  newOutGal->feff = 0.;
   newOutGal->fg = 0.;
   newOutGal->zreion = 0.;  
   newOutGal->photHI_bg = 0.;  
 
   for(int i=0; i<OUTPUTSNAPNUMBER; i++)
     newOutGal->stellarmasshistory[i] = 0.;
+
+#if defined WITHMETALS
+  for(int i=0; i<3; i++)
+  {
+    newOutGal->Mmetal[i] = 0.;
+    newOutGal->MmetalIni[i] = 0.;
+    newOutGal->MmetalNew[i] = 0.;
+    newOutGal->fracMmetalMer[i] = 0.;
+    newOutGal->MmetalEj[i] = 0.;
+  }
+
+  for(int i=0; i<OUTPUTSNAPNUMBER; i++)
+    newOutGal->metalmasshistory[i] = 0.;
+  
+  newOutGal->Mdust = 0.;
+#endif
 }
 
 outgalsnap_t *initOutGalList(int numGal)
@@ -82,6 +142,7 @@ outgalsnap_t *initOutGalList(int numGal)
     fprintf(stderr, "Could not allocate newOutGalList\n");
     exit(EXIT_FAILURE);
   }
+  memset(newOutGalList, 0, sizeof(outgalsnap_t) * numGal);
   
   for(int gal=0; gal<numGal; gal++)
   {    
@@ -99,9 +160,23 @@ outgalsnap_t *initOutGalList(int numGal)
     newOutGalList[gal].velMax = 0.;
     newOutGalList[gal].spin = 0.;
     newOutGalList[gal].scalefactorLastMajorMerger = 0.;
-    newOutGalList[gal].Mgas = 0.;
+    
     newOutGalList[gal].MgasIni = 0.;
+#ifndef FIRST
+    newOutGalList[gal].fracMgasMer = 0.;
+#endif
+#if defined WITHMETALS
+    newOutGalList[gal].MgasNew = 0.;
+    newOutGalList[gal].MgasEj = 0.;
+#endif
+    newOutGalList[gal].Mgas = 0.;
     newOutGalList[gal].Mstar = 0.;
+    
+#ifndef FIRST
+    newOutGalList[gal].fesc = 0.;
+    newOutGalList[gal].Nion = 0.;
+    newOutGalList[gal].fej = 0.;
+#endif
     newOutGalList[gal].feff = 0.;
     newOutGalList[gal].fg = 0.;
     newOutGalList[gal].zreion = 0.;
@@ -110,6 +185,21 @@ outgalsnap_t *initOutGalList(int numGal)
     for(int i=0; i<OUTPUTSNAPNUMBER; i++)
       newOutGalList[gal].stellarmasshistory[i] = 0.;
 
+#ifdef WITHMETALS
+    for(int i=0; i<3; i++)
+    {
+      newOutGalList[gal].Mmetal[i] = 0.;
+      newOutGalList[gal].MmetalIni[i] = 0.;
+      newOutGalList[gal].MmetalNew[i] = 0.;
+      newOutGalList[gal].fracMmetalMer[i] = 0.;
+      newOutGalList[gal].MmetalEj[i] = 0.;
+    }
+
+    for(int i=0; i<OUTPUTSNAPNUMBER; i++)
+      newOutGalList[gal].metalmasshistory[i] = 0.;
+    
+    newOutGalList[gal].Mdust = 0.;
+#endif
   }
   
   return newOutGalList;
@@ -132,6 +222,12 @@ outgal_t *initOutGalTree()
     fprintf(stderr, "Could not allocate outgalsnap_t\n");
     exit(EXIT_FAILURE);
   }
+  
+#if defined WITHROCKSTARID
+  newOutGal->ID = 0;
+  newOutGal->descID = 0;
+#endif
+  
   newOutGal->localID = 0;
   newOutGal->localDescID = 0;
   newOutGal->numProg = 0;
@@ -150,14 +246,41 @@ outgal_t *initOutGalTree()
   newOutGal->velMax = 0.;
   newOutGal->spin = 0.;
   newOutGal->scalefactorLastMajorMerger = 0.;
-  newOutGal->Mgas = 0.;
+  
   newOutGal->MgasIni = 0.;
+#ifndef FIRST
+  newOutGal->fracMgasMer = 0.;
+#endif
+#if defined WITHMETALS
+  newOutGal->MgasNew = 0.;
+  newOutGal->MgasEj = 0.;
+#endif
+  newOutGal->Mgas = 0.;
   newOutGal->Mstar = 0.;
-  newOutGal->feff = 0.;  
+  
+#ifndef FIRST
+  newOutGal->fesc = 0.;
+  newOutGal->Nion = 0.;
+  newOutGal->fej = 0.;
+#endif
+  newOutGal->feff = 0.;
   newOutGal->fg = 0.;
   newOutGal->zreion = 0.;
   newOutGal->photHI_bg = 0.;
 
+#if defined WITHMETALS
+  for(int i=0; i<3; i++)
+  {
+    newOutGal->Mmetal[i] = 0.;
+    newOutGal->MmetalIni[i] = 0.;
+    newOutGal->MmetalNew[i] = 0.;
+    newOutGal->fracMmetalMer[i] = 0.;
+    newOutGal->MmetalEj[i] = 0.;
+  }
+  
+  newOutGal->Mdust = 0.;
+#endif
+  
   return newOutGal;
 }
 
@@ -181,11 +304,12 @@ outgtree_t *initOutGtree(int numGal)
   
   newOutGtree->numGal = numGal;
   newOutGtree->outgalaxies = malloc(sizeof(outgal_t) * numGal);
-  if(newOutGtree == NULL)
+  if(newOutGtree->outgalaxies == NULL)
   {
     fprintf(stderr, "Could not allocate galaxies (numGal * outgal_t) in tree.\n");
     exit(EXIT_FAILURE);
   }
+  memset(newOutGtree->outgalaxies, 0, sizeof(outgal_t) * numGal);
   
   return newOutGtree;
 }

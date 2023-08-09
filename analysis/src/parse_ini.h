@@ -29,6 +29,13 @@
                 exit(EXIT_FAILURE);                                    \
         }
 
+#define checkFromIni(trgt, func, ini, keyName, sectionName)      \
+    if (!func(ini, keyName, sectionName, trgt)) {              \
+                fprintf(stdout,                                        \
+                        "FATAL:  Could not get %s from section %s.\nWill ignore in the following.\n", \
+                        keyName, sectionName);                         \
+        }
+        
 /*--- ADT handle --------------------------------------------------------*/
 typedef struct parse_ini_struct parse_ini_struct_t;
 typedef parse_ini_struct_t      *parse_ini_t;

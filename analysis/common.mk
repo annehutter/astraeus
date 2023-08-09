@@ -5,7 +5,6 @@ FFTW3DIR :=/Users/users/hutter/Libraries/include
 FFTW_CFLAGS := -I$(FFTW3DIR)
 FFTW3LIBDIR :=/Users/users/hutter/Libraries/lib
 FFTW3_LINK := -L$(FFTW3LIBDIR) -lfftw3
-# FFTW3_LINK := -lfftw3
 
 GSL_FOUND := $(shell gsl-config --version)
 ifndef GSL_FOUND
@@ -15,10 +14,10 @@ GSL_CFLAGS := $(shell gsl-config --cflags)
 GSL_LIBDIR := $(shell gsl-config --prefix)/lib
 GSL_LINK := $(shell gsl-config --libs) -Xlinker -rpath -Xlinker $(GSL_LIBDIR)
 
-# LDFLAGS := -lm $(FFTW3_LINK)
+SIM_CFLAGS := -D WITHMETALS
+
 LDFLAGS := -lm $(GSL_LINK) $(FFTW3_LINK)
-# CFLAGS := -c -std=c99 -march=native $(WARNING) $(OPTIMIZE) #$(FFTW_CFLAGS)
-CFLAGS := -c -std=c99 -march=native $(WARNING) $(OPTIMIZE) $(GSL_CFLAGS) $(FFTW_CFLAGS)
+CFLAGS := -c -std=c99 -march=native $(WARNING) $(OPTIMIZE) $(GSL_CFLAGS) $(FFTW_CFLAGS) $(SIM_CFLAGS)
 
 ifdef GCC-DEBUG
   CFLAGS +=-fsanitize=leak -fsanitize=undefined -fsanitize=bounds -fsanitize=address -fsanitize-address-use-after-scope -fsanitize-undefined-trap-on-error -fstack-protector-all

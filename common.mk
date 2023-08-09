@@ -14,7 +14,7 @@ GSL_CFLAGS := $(shell gsl-config --cflags)
 GSL_LIBDIR := $(shell gsl-config --prefix)/lib
 GSL_LINK := $(shell gsl-config --libs) -Xlinker -rpath -Xlinker $(GSL_LIBDIR)
 
-SIM_CFLAGS := -D OUTPUTSNAPNUMBER=73
+SIM_CFLAGS := -D OUTPUTSNAPNUMBER=73 -D WITHMETALS
 
 LDFLAGS := -lm $(GSL_LINK) $(FFTW3_LINK)
 CFLAGS := -c -std=c99 -march=native $(WARNING) $(OPTIMIZE) $(GSL_CFLAGS) $(FFTW_CFLAGS) $(SIM_CFLAGS)

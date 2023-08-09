@@ -22,6 +22,7 @@
 #include "outgal.h"
 #include "nion.h"
 #include "domain.h"
+#include "metallicity.h"
 #include "run.h"
 #include "output.h"
 

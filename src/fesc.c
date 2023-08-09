@@ -47,6 +47,9 @@ double get_fesc_MHinc(gal_t *thisGal, dconfObj_t simParam)
   
   double fesc = fescLow * pow(fescLow/fescHigh, - log10(Mvir*invMvirLow) / log10(MvirHigh*invMvirLow));
   
+  if(fesc > 1.)
+    fesc = 1.;
+  
   return fesc;
 }
 
@@ -60,7 +63,11 @@ double get_fesc_MHdec(gal_t *thisGal, dconfObj_t simParam)
   
   double invMvirLow = 1./MvirLow;
   
-  double fesc = (1.-fescLow) * pow((1.-fescLow)/(1.-fescHigh), - log10(Mvir*invMvirLow) / log10(MvirHigh*invMvirLow));
+//   double fesc = (1.-fescLow) * pow((1.-fescLow)/(1.-fescHigh), - log10(Mvir*invMvirLow) / log10(MvirHigh*invMvirLow));
+  double fesc = fescLow * pow(fescLow/fescHigh, - log10(Mvir*invMvirLow) / log10(MvirHigh*invMvirLow));
+
+  if(fesc > 1.)
+    fesc = 1.;
   
   return fesc;
 }

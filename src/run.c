@@ -40,6 +40,8 @@
 #include "evol_gal.h"
 #include "starformation_SNfeedback.h"
 
+#include "metallicity.h"
+
 #include "comm_gal_grid_struct.h"
 #include "comm_gal_grid.h"
 
@@ -61,7 +63,7 @@ void run_astraeus(dconfObj_t simParam, int thisRank, int size)
   /* INITIALIZATION & STARTUP */
   /*---------------------------------------------------------------------*/
 
-  /* INITILAIZE DOMAIN */
+  /* INITIALIZE DOMAIN */
   domain_t *domain = initDomain(simParam->gridsize, thisRank, size);
 
   /* LOADING TREES */
@@ -72,7 +74,7 @@ void run_astraeus(dconfObj_t simParam, int thisRank, int size)
   gtree_t **theseGtrees = NULL;
   int32_t numGtrees = gtrees_from_trees(&theseTrees, numTrees, &theseGtrees);
   free(theseTrees);
-
+  
   /* SIMULATION */
   redshiftlist_t *thisRedshiftList = read_redshift_snap_list(simParam->redshiftFile);
   int startSnap = simParam->startSnap;
@@ -84,11 +86,20 @@ void run_astraeus(dconfObj_t simParam, int thisRank, int size)
   
   /* create lookup table for delayed SN feedback scheme */
   if(simParam->delayedSNfeedback == 1)
-    simParam->SNenergy = get_SNenergy_delayed(endSnap, simParam->timeSnaps);
+    simParam->SNenergy = get_SNenergy_delayed(simParam);
   
   /* create lookup table for correction factor when ionizing emissivity is distributed over time step*/
   if(simParam->reion == 1 && simParam->sps_model > 10)
     simParam->corrFactor_nion = get_corrFactor_nion(simParam);
+
+  /* read & create lookup tables for metallicity */
+#if defined WITHMETALS
+  if(simParam->metals == 1)
+  {
+    get_and_initialise_metallicity_tables(simParam);
+  }
+  metal_t *thisMetal = initMetal(simParam->endSnap);
+#endif
   
   /* WRITING OUTPUT */
   int *numGalSnap = allocate_array_int(endSnap, "numGalSnap");
@@ -112,10 +123,10 @@ void run_astraeus(dconfObj_t simParam, int thisRank, int size)
   if(simParam->reion == 1 && simParam->reion_model == 1)
   {
     /* initialising CIFOG */
+    check_cifogParam(simParam, &cifogParam, thisRank);
     cifog_init(simParam->cifogIniFile, &cifogParam, &grid,  &integralTable, &photIonBgList, thisRank);
-    check_cifogParam(simParam, cifogParam, thisRank);
   }
-  
+
   /* SET WALKER TO CORRECT STARTING POSITION IN TREE */
   set_walker_to_startSnap(numGtrees, &theseGtrees, startSnap);
   
@@ -124,36 +135,40 @@ void run_astraeus(dconfObj_t simParam, int thisRank, int size)
   /*---------------------------------------------------------------------*/
   /* RUN ASTRAEUS ACROSS SNAPSHOTS */
   /*---------------------------------------------------------------------*/
-  
+
   /* LOOPING OVER SNAPSHOTS */
   for(int snap=startSnap; snap<endSnap; snap=snap+deltaSnap)
-  {    
+  {
     if(snap == simParam->snapList[outSnapCounter])
       outGalList = initOutGalList(MAXGAL);
-        
+
     if(simParam->reion == 1)
       thisNionList = initNion(MAXGAL);
 
     minSnap = snap;
     maxSnap = snap + deltaSnap;
-    
+
 #ifdef MPI
     MPI_Barrier(MPI_COMM_WORLD);
 #endif
-    
+        
     /* evolve galaxies by <deltaSnap> snapshots */
+#if defined WITHMETALS
+    evolve(numGtrees, &theseGtrees, minSnap, maxSnap, simParam, domain, thisNionList, photHI, zreion, thisMetal, simParam->snapList[outSnapCounter], &outGalList, numGalSnap);
+#else
     evolve(numGtrees, &theseGtrees, minSnap, maxSnap, simParam, domain, thisNionList, photHI, zreion, simParam->snapList[outSnapCounter], &outGalList, numGalSnap);
+#endif
         
 #ifdef MPI
     MPI_Barrier(MPI_COMM_WORLD);
 #endif
-    
+
     if(snap == simParam->snapList[outSnapCounter])
     {
       /* write galaxies in snap to file */
       write_galaxies_of_snap_to_file(simParam, snap, numGalSnap[snap], outGalList);
       free(outGalList);
-      
+
       if(outSnapCounter < simParam->numSnapsToWrite - 1)
         outSnapCounter++;
     }
@@ -161,7 +176,7 @@ void run_astraeus(dconfObj_t simParam, int thisRank, int size)
 #ifdef MPI
     MPI_Barrier(MPI_COMM_WORLD);
 #endif
-    
+
     /* do reionization */
     if(simParam->reion == 1 && simParam->reion_model == 1)
     {
@@ -196,7 +211,16 @@ void run_astraeus(dconfObj_t simParam, int thisRank, int size)
       if(cifogNion != NULL) fftw_free(cifogNion);
       deallocate_nion(thisNionList); 
     }
-    
+
+    /* Computing the average IGM metallicity */
+#if defined WITHMETALS
+    if(simParam->metals == 1)
+    {
+      distribute_metallicityIgm(thisMetal, snap);
+      map_metallicityIgm_to_gal(numGtrees, &theseGtrees, minSnap, maxSnap, thisMetal);
+    }
+#endif
+
 #ifdef MPI
     MPI_Barrier(MPI_COMM_WORLD);
 #endif
@@ -208,24 +232,33 @@ void run_astraeus(dconfObj_t simParam, int thisRank, int size)
 #ifdef MPI
       MPI_Allreduce(&(numGalSnap[snap]), &printNumGalSnap, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
 #endif
+
+#if defined WITHMETALS
+      if(thisRank == 0 && simParam->metals == 1)
+        printf("snap %d: numGalSnap = %d \t MetallicityIgm = %.2e\n", snap, printNumGalSnap, thisMetal->meanMetallicityIgm[snap]);
+      else
+        if(thisRank == 0) printf("snap %d: numGalSnap = %d\n", snap, printNumGalSnap);
+#else
       if(thisRank == 0) printf("snap %d: numGalSnap = %d\n", snap, printNumGalSnap);
+#endif
     }
   }
 
   /* Write number of galaxies contained in each snap into a file */
+  if(thisRank == 0) printf("rank %d: writing horizontalOutput\n", thisRank);
   if(simParam->horizontalOutput == 1)
   {
     write_num_galaxies_to_file(simParam, numGalSnap, endSnap, thisRank);
   }
-  
-  /* Write trees into #PROC files */
+
+  /* Write trees into #PROC file */
   if(simParam->verticalOutput == 1)
   {
     if(simParam->endSnap!=OUTPUTSNAPNUMBER+1)
     {
       gtree_t **theseNewGtrees = NULL;
       int newNumGtrees;
-      
+
       newNumGtrees = cutandresort(theseGtrees, numGtrees, endSnap-1, &theseNewGtrees);
       write_treelist(simParam, thisRank, newNumGtrees, theseNewGtrees);
       deallocate_gtreeList(theseNewGtrees, newNumGtrees);
@@ -237,7 +270,7 @@ void run_astraeus(dconfObj_t simParam, int thisRank, int size)
       printf("Rank %d : total trees = %d\n", thisRank, numGtrees);
     }
   }
-  
+
 #ifdef MPI
   long int tmpNumHalos = numHalos;
   MPI_Allreduce(&tmpNumHalos, &numHalos, 1, MPI_LONG, MPI_SUM, MPI_COMM_WORLD);
@@ -256,6 +289,10 @@ void run_astraeus(dconfObj_t simParam, int thisRank, int size)
       if(zreion != NULL) fftw_free(zreion);
   }
 
+#if defined WITHMETALS
+  deallocate_metal(thisMetal);
+#endif
+
   /* deallocate all lists, trees and other structs */
   deallocate_redshiftlist(thisRedshiftList);
   free(numGalSnap);
@@ -267,7 +304,11 @@ void run_astraeus(dconfObj_t simParam, int thisRank, int size)
 /* This function evolves all galaxies in the trees by (maxSnap-minSnap)*/
 /* time steps                                                          */
 /*---------------------------------------------------------------------*/
+#if defined WITHMETALS
+void evolve(int numGtrees, gtree_t ***thisGtreeList, int minSnap, int maxSnap, dconfObj_t simParam, domain_t *thisDomain, nion_t *thisNionList, fftw_complex *photHI, fftw_complex *zreion, metal_t *thisMetal, int outSnap, outgalsnap_t **outGalList, int *numGalInSnapList)
+#else
 void evolve(int numGtrees, gtree_t ***thisGtreeList, int minSnap, int maxSnap, dconfObj_t simParam, domain_t *thisDomain, nion_t *thisNionList, fftw_complex *photHI, fftw_complex *zreion, int outSnap, outgalsnap_t **outGalList, int *numGalInSnapList)
+#endif
 {
   gtree_t **theseGtrees = *thisGtreeList;
   gtree_t *thisGtree = NULL;
@@ -280,14 +321,18 @@ void evolve(int numGtrees, gtree_t ***thisGtreeList, int minSnap, int maxSnap, d
   int32_t numGalInOutSnap = 0;
   int32_t count = 0;
   
+#ifdef WITHMETALS
+  double invTotMgas = 1./ (simParam->omega_b * 2.76e11 * simParam->boxsize * simParam->boxsize * simParam->boxsize); // in Msun/h
+#endif
+  
   /* LOOP OVER TREES */
   for(int gtree=0; gtree<numGtrees; gtree++)
   {
     thisGtree = theseGtrees[gtree];
     numGal = thisGtree->numGal;
     gal = thisGtree->walker;
-        
-    if(gal < numGal) 
+    
+    if(gal < numGal)
     {
       snapGal = thisGtree->galaxies[gal].snapnumber;
 
@@ -305,7 +350,7 @@ void evolve(int numGtrees, gtree_t ***thisGtreeList, int minSnap, int maxSnap, d
             {
               thisGal->photHI_bg = get_gridProperty_gal(thisGal, thisDomain->nbins, inv_boxsize, photHI);
 
-              if(thisGal->zreion <= 0.) 
+              if(thisGal->zreion <= 0.)
               {
                 thisGal->zreion = get_gridProperty_gal(thisGal, thisDomain->nbins, inv_boxsize, zreion);
               }
@@ -313,18 +358,22 @@ void evolve(int numGtrees, gtree_t ***thisGtreeList, int minSnap, int maxSnap, d
             
             /* evolve galaxy */
             evolve_gal(thisGal, thisGtree, simParam);
-            
+
             if(thisGal->zreion > 0.) assert(thisGal->zreion >= 1./thisGal->scalefactor - 1.);
 
             /* store ionizing properties for reionization */
             if(simParam->reion == 1) copy_gal_to_nion(thisGal, simParam, thisDomain, 1.1, thisNionList);
             
+#if defined WITHMETALS
+            if(simParam->metals == 1) add_ejected_metals_to_igm(thisGal, snap, invTotMgas, thisMetal);
+#endif
+
             /* clean galaxy (free not needed memory) */
-            clean_gal(thisGal, outSnap);
-            
+            clean_gal(simParam, thisGal, outSnap);
+
             gal++;
             numGalInSnap++;
-            
+
             /* adding galaxies to list to write into file */
             if((*outGalList) != NULL && snap == outSnap)
             {
@@ -339,11 +388,11 @@ void evolve(int numGtrees, gtree_t ***thisGtreeList, int minSnap, int maxSnap, d
                   initOutGalSnapWithoutAllocation(&((*outGalList)[outGal]));
               }
             }
-            
+
             /* stop when reaching the end of the tree */
             if(gal == numGal)
               break;
-            
+
             /* go to the next galaxy */
             thisGal = &(thisGtree->galaxies[gal]);
           }
@@ -370,7 +419,7 @@ void set_walker_to_startSnap(int numGtrees, gtree_t ***thisGtreeList, int startS
   int32_t gal = 0;
   int32_t snapGal = 0;
   int32_t numGal = 0;
-      
+
   /* LOOP OVER TREES */
   for(int gtree=0; gtree<numGtrees; gtree++)
   {
@@ -384,10 +433,96 @@ void set_walker_to_startSnap(int numGtrees, gtree_t ***thisGtreeList, int startS
       gal++;
       snapGal = thisGtree->galaxies[gal].snapnumber;
     }
-    
+
     thisGtree->walker = gal;
   }
 }
+
+/*---------------------------------------------------------------------*/
+/* This function reads the lookup tables for the metallicity and       */
+/* initialises necessary arrays                                        */
+/*---------------------------------------------------------------------*/
+#if defined WITHMETALS
+void get_and_initialise_metallicity_tables(dconfObj_t simParam)
+{  
+  char *filename = NULL;
+  int numMassBins = 0;
+  int numMetallicityBins = 0;
+  int numBins = 0;
+  
+  filename = concat(simParam->metal_table_file,"M.dat");
+  numMassBins = read_array_from_txtfile(filename, &(simParam->metalTables_mass));
+  simParam->metalTables_numMassBins = numMassBins;
+  free(filename);
+  
+  filename = concat(simParam->metal_table_file,"Z.dat");
+  numMetallicityBins = read_array_from_txtfile(filename, &(simParam->metalTables_metallicity));
+  simParam->metalTables_numMetallicityBins = numMetallicityBins;
+  free(filename);
+    
+  filename = concat(simParam->metal_table_file,"imf.dat");
+  numBins = read_array_from_txtfile(filename, &(simParam->metalTables_imf));
+  assert(numBins == numMassBins);
+  free(filename);
+  
+  filename = concat(simParam->metal_table_file,"lifetimes.dat");
+  numBins = read_array_from_txtfile(filename, &(simParam->metalTables_lifetime));
+  assert(numBins == numMassBins);
+  free(filename);
+  
+  /* Total metallicity */
+  filename = concat(simParam->metal_table_file,"yields_HN_kobayashi2020.dat");
+  numBins = read_array_from_txtfile(filename, &(simParam->metalTables_metalYields));
+  assert(numBins == numMassBins * numMetallicityBins);
+  free(filename);
+  
+  filename = concat(simParam->metal_table_file,"yields_snia_thielemann2003.dat");
+  numBins = read_array_from_txtfile(filename, &(simParam->metalTables_metalYields_SNIa));
+  free(filename);
+  
+  /* OXYGEN */
+  filename = concat(simParam->metal_table_file,"yields_HN_kobayashi2020_OXYGEN.dat");
+  numBins = read_array_from_txtfile(filename, &(simParam->metalTables_metalYieldsO));
+  assert(numBins == numMassBins * numMetallicityBins);
+  free(filename);
+  
+  filename = concat(simParam->metal_table_file,"yields_snia_thielemann2003_OXYGEN.dat");
+  numBins = read_array_from_txtfile(filename, &(simParam->metalTables_metalYieldsO_SNIa));
+  free(filename);
+  
+  /* IRON */
+  filename = concat(simParam->metal_table_file,"yields_HN_kobayashi2020_IRON.dat");
+  numBins = read_array_from_txtfile(filename, &(simParam->metalTables_metalYieldsFe));
+  assert(numBins == numMassBins * numMetallicityBins);
+  free(filename);
+  
+  filename = concat(simParam->metal_table_file,"yields_snia_thielemann2003_IRON.dat");
+  numBins = read_array_from_txtfile(filename, &(simParam->metalTables_metalYieldsFe_SNIa));
+  free(filename);
+  
+  /* Returned gas */
+  filename = concat(simParam->metal_table_file,"return_HN_kobayashi2020.dat");
+  numBins = read_array_from_txtfile(filename, &(simParam->metalTables_gasYields));
+  assert(numBins == numMassBins * numMetallicityBins);
+  free(filename);
+  
+  /* Dust */
+  filename = concat(simParam->metal_table_file,"yields_dust_agb.dat");
+  numBins = read_array_from_txtfile(filename, &(simParam->metalTables_dustYields));
+  assert(numBins == numMassBins * numMetallicityBins);
+  free(filename);
+  
+  /* This is useful to compute the SFR */
+  int endSnap = simParam->endSnap;
+  simParam->invdeltat = allocate_array_double(endSnap, "invdeltat");
+  for(int i=1; i<endSnap; i++) 
+  { 
+    simParam->invdeltat[i] = 1. / (simParam->timeSnaps[i] - simParam->timeSnaps[i-1]); 
+  }
+  // Note that because allocate_array_float initializes with zeros
+  // the first element in simParam->invdeltat is zero!
+}
+#endif 
 
 /*---------------------------------------------------------------------*/
 /* This function writes the grids containing the reionization redshift */

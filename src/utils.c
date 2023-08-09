@@ -13,7 +13,7 @@
 double randdouble()
 {
     return rand()/((double)(RAND_MAX)+1);
-} 
+}
 
 /* ------------------------------------------------------------*/
 /* STRING ADDITION                                             */
@@ -24,7 +24,7 @@ char* concat(const char *s1, const char *s2)
     //in real code you would check for errors in malloc here
     strcpy(result, s1);
     strcat(result, s2);
-    
+
     return result;
 }
 
@@ -35,7 +35,7 @@ char* concat2(const char *s1, const char *s2, const char *s3)
     strcpy(result, s1);
     strcat(result, s2);
     strcat(result, s3);
-    
+
     return result;
 }
 
@@ -47,7 +47,7 @@ char* concat3(const char *s1, const char *s2, const char *s3, const char *s4)
     strcat(result, s2);
     strcat(result, s3);
     strcat(result, s4);
-    
+
     return result;
 }
 
@@ -60,7 +60,7 @@ char* concat4(const char *s1, const char *s2, const char *s3, const char *s4, co
     strcat(result, s3);
     strcat(result, s4);
     strcat(result, s5);
-    
+
     return result;
 }
 
@@ -71,7 +71,7 @@ char *concat_strings(int numberOfStr, char *basis, ...)
     char *name;
     size_t length = strlen(basis);
     int count=1;
-    
+
     va_list args_list;
     va_start(args_list, basis);
 
@@ -81,7 +81,7 @@ char *concat_strings(int numberOfStr, char *basis, ...)
         length += strlen(ptr);
     }
     va_end(args_list);
-    if((name = malloc(length + 1))) //+1 for the null-terminator   
+    if((name = malloc(length + 1))) //+1 for the null-terminator
     {
         va_start(args_list, basis);
         strcpy(name, basis);
@@ -143,6 +143,17 @@ void initialize_array_double(int nbins, double *array, double value)
     {
         array[i] = value;
     }
+}
+
+void initialize_2darray_double(int nrows, int ncols, double **array, double value)
+{
+  for(int i=0; i<nrows; i++) 
+  {
+    for(int j=0; j<ncols; j++)
+    {
+      array[i][j] = value;
+    }
+  }
 }
 
 /* ------------------------------------------------------------*/
@@ -209,6 +220,28 @@ double* allocate_array_double(int length, char *arrayname)
     return tmp;
 }
 
+double** allocate_2darray_double(int nrows, int ncols, char *arrayname)
+{
+  double **tmp;
+  tmp = malloc(nrows * sizeof(double*));
+  if(tmp == NULL)
+  {
+    fprintf(stderr, "allocate_array_double: could not allocate array %s\n", arrayname);
+    exit(EXIT_FAILURE);
+  }
+  for(int i=0; i<nrows; i++)
+  {
+    tmp[i] = malloc(ncols * sizeof(double));
+    if(tmp[i] == NULL) 
+    {
+      fprintf(stderr, "allocate_array_double: could not allocate array %s\n", arrayname);
+      exit(EXIT_FAILURE);
+    }
+  }
+  initialize_2darray_double(nrows, ncols, tmp, 0.);
+  return tmp;
+}
+
 /* ------------------------------------------------------------*/
 /* FILE EXISTENCE                                              */
 /* ------------------------------------------------------------*/
@@ -250,13 +283,13 @@ char *get_directory(char *filename)
         {
             printf("There is no file:'%s'\n", filename); /* You decide here */
         }
-        
+
         if(token != NULL)
         {
             length = strlen(filename)-strlen(token);
             directory = strndup(filename, length);
         }
-        
+
         return directory;
 }
 
@@ -289,30 +322,30 @@ void copy_file(char *fileToCopy, char *copiedTarget)
 {
    char ch;
    FILE *source, *target;
- 
- 
+
+
    source = fopen(fileToCopy, "r");
- 
+
    if (source == NULL)
    {
       printf("Failed to copy source : %s doesn't exist\n", fileToCopy);
       exit(EXIT_FAILURE);
    }
- 
+
    target = fopen(copiedTarget, "w");
- 
+
    if (target == NULL)
    {
       fclose(source);
       printf("Failed to copy to target : %s doesn't exist\n", copiedTarget);
       exit(EXIT_FAILURE);
    }
- 
+
    while ((ch = fgetc(source)) != EOF)
       fputc(ch, target);
- 
+
    printf("%s copied successfully.\n", fileToCopy);
- 
+
    fclose(source);
    fclose(target);
 }

@@ -19,6 +19,11 @@ gal_t *initGal()
     exit(EXIT_FAILURE);
   }
 
+#if defined WITHROCKSTARID
+  newGal->ID = -1;
+  newGal->descID = -1;
+#endif
+  
   newGal->localID = -1;
   newGal->localDescID = -1;
   newGal->numProg = 0;
@@ -39,25 +44,53 @@ gal_t *initGal()
   newGal->velMax = 0.;
   newGal->spin = 0.;
   newGal->scalefactorLastMajorMerger = 0.;
+
+  newGal->MgasIni = 0.;
+  newGal->fracMgasMer = 0.;
+#if defined WITHMETALS
+  newGal->MgasNew = 0.;
+  newGal->MgasEj = 0.;
+#endif
   newGal->Mgas = 0.;
   newGal->Mstar = 0.;
-  newGal->fracMgasMer = 0.;
-  newGal->MgasIni = 0.;
-  
+
+  newGal->fesc = 0.;
+  newGal->Nion = 0;
+  newGal->fej = 0.;
   newGal->feff = 0.;
   newGal->fg = 0.;
-  newGal->photHI_bg = 0.;
   newGal->zreion = 0.;
+  newGal->photHI_bg = 0.;
   
   newGal->stellarmasshistory = NULL;
 
-  printf("pointer is %p\n", newGal->stellarmasshistory);
+#if defined WITHMETALS
+  for(int i=0; i<3; i++) 
+  {
+    newGal->Mmetal[i] = 0.;
+    newGal->MmetalIni[i] = 0.;
+    newGal->MmetalNew[i] = 0.;
+    newGal->fracMmetalMer[i] = 0.;
+    newGal->MmetalEj[i] = 0.; 
+    newGal->igmMetallicity[i] = 0.;
+  }
+
+  newGal->metalmasshistory = NULL;
+  
+  newGal->Mdust = 0.;
+  newGal->MdustEj = 0.;
+  newGal->igmDustFraction = 0.;
+#endif
+  
   return newGal;
 }
 
 void deallocate_gal(gal_t *thisGal)
 {
   if(thisGal->stellarmasshistory != NULL) free(thisGal->stellarmasshistory);
+#if defined WITHMETALS
+  if(thisGal->metalmasshistory != NULL) free(thisGal->metalmasshistory);
+#endif
   if(thisGal != NULL) free(thisGal);
 }
 
@@ -82,6 +115,7 @@ gtree_t *initGtree(int Ngal)
     fprintf(stderr, "Could not allocate galaxies (Ngal * gal_t) in tree.\n");
     exit(EXIT_FAILURE);
   }
+  memset(newGtree->galaxies, 0, sizeof(gal_t) * Ngal);
   
   return newGtree;
 }

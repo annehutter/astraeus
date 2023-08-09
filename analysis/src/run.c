@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <math.h>
 #include <time.h>
+#include <sys/stat.h>
 
 #ifdef MPI
 #include <mpi.h>
@@ -24,6 +25,7 @@
 #include "numdens_analytic.h"
 #include "selection_analytic.h"
 #include "selection_evolution_analytic.h"
+#include "selection_galaxypairs.h"
 #include "tree_correct.h"
 
 #include "SNfeedback.h"
@@ -33,6 +35,11 @@
 
 void analysis(dconfObj_t simParam, int thisRank, int size)
 {
+  if(directory_exist(simParam->outputDir) == 0)
+  {
+    mkdir(simParam->outputDir, 0744);
+  }
+  
   /* -----------------------------------------------------------------------*/
   /* LOADING TREES */
   /* -----------------------------------------------------------------------*/
@@ -191,6 +198,14 @@ void analysis(dconfObj_t simParam, int thisRank, int size)
           }
           else
             get_1D_histogram(simParam, theseTrees, numTrees, listEquals, index, sizeListEquals, currSnap, simParam->binProperty_1D[i], simParam->binsInLog_1D[i], simParam->binsPerMag_1D[i], 0, simParam->cumulative[i], filename, thisRank);
+          free(filename);
+        }
+        
+        for(int i=0; i<simParam->num_galaxyPairs; i++)
+        {
+          char *filename = create_filename_galaxypairs(simParam->outputDir, simParam->selectionProperty1[i], simParam->selectionProperty2[i], simParam->minSelectionProperty1[i], simParam->maxSelectionProperty1[i], simParam->minSelectionProperty2[i], simParam->maxSelectionProperty2[i], simParam->outputRedshifts[counter]);
+
+          select_galaxypairs(simParam, theseTrees, numTrees, listEquals, index, sizeListEquals, currSnap, simParam->selectionProperty1[i], simParam->selectionProperty2[i], simParam->propertyWithHistory_galaxyPairs[i], simParam->minSelectionProperty1[i], simParam->maxSelectionProperty1[i], simParam->minSelectionProperty2[i], simParam->maxSelectionProperty2[i], simParam->maxDistanceInComMpc[i], filename, thisRank, size);
           free(filename);
         }
         

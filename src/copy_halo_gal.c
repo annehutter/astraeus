@@ -9,6 +9,11 @@
 
 void copy_halo_to_gal(halo_t *thisHalo, gal_t *thisGal)
 {
+#if defined WITHROCKSTARID
+  thisGal->ID = thisHalo->ID;
+  thisGal->descID = thisHalo->descID;
+#endif
+  
   thisGal->localID = thisHalo->localID;
   thisGal->localDescID = thisHalo->localDescID;
   thisGal->numProg = thisHalo->numProg;
@@ -24,23 +29,47 @@ void copy_halo_to_gal(halo_t *thisHalo, gal_t *thisGal)
   }
   thisGal->Mvir = thisHalo->Mvir;
   thisGal->Mvir_prog = 0.;
-  
   thisGal->Rvir = thisHalo->Rvir;
   thisGal->velDisp = thisHalo->velDisp;
   thisGal->velMax = thisHalo->velMax;
   thisGal->spin = thisHalo->spin;
   thisGal->scalefactorLastMajorMerger = thisHalo->scalefactorLastMajorMerger;
-  thisGal->Mgas = 0.;
+  
   thisGal->MgasIni = 0.;
   thisGal->fracMgasMer = 0.;
+#if defined WITHMETALS
+  thisGal->MgasNew = 0.;
+  thisGal->MgasEj = 0.;
+#endif
+  thisGal->Mgas = 0.;
   thisGal->Mstar = 0.;
   
+  thisGal->fesc = 0.;
+  thisGal->Nion = 0;
+  thisGal->fej = 0.;
   thisGal->feff = 0.;
   thisGal->fg = 0.;
   thisGal->photHI_bg = 0.;
   thisGal->zreion = 0.;
   
   thisGal->stellarmasshistory = NULL;
+
+#if defined WITHMETALS
+  for(int i=0; i<3; i++)
+  {
+    thisGal->Mmetal[i] = 0.; 
+    thisGal->MmetalIni[i] = 0.;
+    thisGal->fracMmetalMer[i] = 0.;
+    thisGal->MmetalNew[i] = 0.;
+    thisGal->MmetalEj[i] = 0.;
+    thisGal->igmMetallicity[i] = 0.;
+  }
+  thisGal->metalmasshistory = NULL;
+  
+  thisGal->Mdust = 0.;
+  thisGal->MdustEj = 0.;
+  thisGal->igmDustFraction = 0.;
+#endif
 }
 
 gal_t *gal_from_halo(halo_t *thisHalo)

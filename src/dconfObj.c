@@ -2,7 +2,7 @@
  *  dconfObj.c
  *  uvff
  *
- *  Created by 
+ *  Created by
  *  Copyright 2010 __MyCompanyName__. All rights reserved.
  *
  */
@@ -30,20 +30,20 @@ dconfObj_new(parse_ini_t ini)
 {
     dconfObj_t config;
     assert(ini != NULL);
-    
+
     config = xmalloc(sizeof(struct dconfObj_struct));
-    
+
     char *reion_model = NULL;
     char *sps_model = NULL;
     char *fesc_model = NULL;
     char *radfeedback_model = NULL;
-    
+
     //reading mandatory stuff
     getFromIni(&(config->numFiles), parse_ini_get_int32,
                ini, "numFiles", "Input");
     getFromIni(&(config->fileName), parse_ini_get_string,
                ini, "fileName", "Input");
-    
+
     getFromIni(&(config->redshiftFile), parse_ini_get_string,
                ini, "redshiftFile", "Simulation");
     getFromIni(&(config->startSnap), parse_ini_get_int32,
@@ -52,16 +52,16 @@ dconfObj_new(parse_ini_t ini)
                ini, "endSnapshot", "Simulation");
     getFromIni(&(config->deltaSnap), parse_ini_get_int32,
                ini, "deltaSnapshot", "Simulation");
-        
+
     getFromIni(&(config->gridsize), parse_ini_get_int32,
                ini, "gridsize", "Simulation");
     getFromIni(&(config->boxsize), parse_ini_get_double,
                ini, "boxsize", "Simulation");
     config->inv_boxsize = 1./config->boxsize;
-    
+
     getFromIni(&(config->memoryIntensive), parse_ini_get_int32,
                ini, "fastButMemoryIntensive", "Simulation");
-    
+
     getFromIni(&(config->omega_m), parse_ini_get_double,
                ini, "OM0", "Cosmology");
     getFromIni(&(config->omega_b), parse_ini_get_double,
@@ -90,12 +90,59 @@ dconfObj_new(parse_ini_t ini)
     getFromIni(&(config->FS), parse_ini_get_double,
                ini, "starFormationEfficiency", "StarFormation");
     config->timeSnaps = NULL;
-    
+
     getFromIni(&(config->delayedSNfeedback), parse_ini_get_int32,
                ini, "doDelayedSNfeedback", "SNfeedback");
     config->SNenergy = NULL;
     getFromIni(&(config->FW), parse_ini_get_double,
                ini, "SNenergyFractionIntoWinds", "SNfeedback");
+    config->burstySF = 1;
+    checkFromIni(&(config->burstySF), parse_ini_get_int32,
+               ini, "doBurstySF", "SNfeedback");
+
+#if defined WITHMETALS
+    /* For metals and dust */
+    config->metals = 0;
+    checkFromIni(&(config->metals), parse_ini_get_int32,
+               ini, "doMetals", "Metals");
+    config->metal_table_file = NULL;
+    checkFromIni(&(config->metal_table_file), parse_ini_get_string,
+               ini, "metalTablesDirectory", "Metals");
+    config->metal_ejectLoadingFactor = 1.;
+    checkFromIni(&(config->metal_ejectLoadingFactor), parse_ini_get_double,
+               ini, "metalEjectionLoadingFactor", "Metals");
+    config->metalTables_numMassBins = 0;
+    config->metalTables_numMetallicityBins = 0;
+    config->metalTables_mass = NULL;
+    config->metalTables_metallicity = NULL;
+    config->metalTables_imf = NULL;
+    config->metalTables_lifetime = NULL;
+    config->metalTables_metalYields = NULL;
+    config->metalTables_metalYields_SNIa = NULL;
+    config->metalTables_metalYieldsO = NULL;
+    config->metalTables_metalYieldsO_SNIa = NULL;
+    config->metalTables_metalYieldsFe = NULL;
+    config->metalTables_metalYieldsFe_SNIa= NULL;
+    config->metalTables_gasYields = NULL;
+    config->metalTables_dustYields = NULL;
+    /* invdeltat is useful to compute the SFR */
+    config->invdeltat   = NULL;
+    
+    config->dust_yield_SNII = 0.45;
+    config->fracColdGas = 0.5;
+    config->dust_destrEfficiency = 0.03;
+    config->dust_timescaleGrainGrowth = 3.e6;
+    checkFromIni(&(config->dust_yield_SNII), parse_ini_get_double,
+               ini, "SNIIyield", "Dust");
+    checkFromIni(&(config->fracColdGas), parse_ini_get_double,
+               ini, "coldGasFraction", "Dust");
+    checkFromIni(&(config->dust_destrEfficiency), parse_ini_get_double,
+               ini, "dustDestrEfficiencyPerSN", "Dust");
+    checkFromIni(&(config->dust_timescaleGrainGrowth), parse_ini_get_double,
+               ini, "timescaleGrainGrowth", "Dust");
+#else
+    printf("Make sure you have the code not compiled with the WITHMETLAS flag!\nOtherwise you will encounter a segmentation fault.\n");
+#endif
     
     getFromIni(&(config->radfeedback), parse_ini_get_int32,
                ini, "doRadfeedback", "RadiativeFeedback");
@@ -136,12 +183,12 @@ dconfObj_new(parse_ini_t ini)
                ini, "tempIonGas", "RadiativeFeedback");
     getFromIni(&(config->mu), parse_ini_get_float,
                ini, "muGas", "RadiativeFeedback");
-     
+
     getFromIni(&(config->reion), parse_ini_get_int32,
                ini, "doReionization", "Reionization");
     getFromIni(&config->cifogIniFile, parse_ini_get_string,
                ini, "cifogIniFile", "Reionization");
-    
+
     getFromIni(&reion_model, parse_ini_get_string,
                ini, "reionizationModel", "Reionization");
     config->reion_model = -1;
@@ -158,7 +205,7 @@ dconfObj_new(parse_ini_t ini)
       }
     }
     config->corrFactor_nion = NULL;
-    
+
     getFromIni(&sps_model, parse_ini_get_string,
             ini, "stellarPopulationSynthesisModel", "Reionization");
     config->sps_model = 0;
@@ -178,9 +225,9 @@ dconfObj_new(parse_ini_t ini)
     {
       config->sps_model = 12;
     }
-    
+
     getFromIni(&fesc_model, parse_ini_get_string,
-               ini, "fescModel", "Reionization");   
+               ini, "fescModel", "Reionization");
     config->fesc_model = -1;
     if(config->reion == 1)
     {
@@ -232,7 +279,7 @@ dconfObj_new(parse_ini_t ini)
       getFromIni(&(config->fesc), parse_ini_get_double,
                ini, "fesc", "fescSN");
     }
-    
+
     config->outputType = 1;
     getFromIni(&(config->outputType), parse_ini_get_int32,
                ini, "type", "Output");
@@ -240,7 +287,7 @@ dconfObj_new(parse_ini_t ini)
                ini, "numSnapsToWrite", "Output");
     getFromIni(&(config->horizontalOutput), parse_ini_get_int32,
                ini, "horizontalOutput", "Output");
-               
+
     if((config->numSnapsToWrite > 0)&&(config->horizontalOutput==1))
     {
       getListFromIni(&(config->snapList), parse_ini_get_int32list,
@@ -251,12 +298,12 @@ dconfObj_new(parse_ini_t ini)
       config->snapList = xmalloc(sizeof(int32_t *));
       config->snapList[0] = -1;
     }
-    
+
     getFromIni(&(config->verticalOutput), parse_ini_get_int32,
                ini, "verticalOutput", "Output");
     getFromIni(&(config->percentageOfTreesToWrite), parse_ini_get_int32,
                ini, "percentageOfTreesToWrite", "Output");
-               
+
     getFromIni(&(config->outFileName), parse_ini_get_string,
                 ini, "outputFile", "Output");
     if(directory_exist(config->outFileName) != 1)
@@ -264,7 +311,7 @@ dconfObj_new(parse_ini_t ini)
       printf("Directory for output does not exist. This will result in a segmentation fault at the end of the program.\nAborting now!\n");
       exit(EXIT_FAILURE);
     }
-               
+
     xfree(reion_model);
     xfree(sps_model);
     xfree(fesc_model);
@@ -278,7 +325,7 @@ dconfObj_del(dconfObj_t *config)
 {
     assert(config != NULL);
     assert(*config != NULL);
-    
+
     //General
     xfree((*config)->fileName);
     xfree((*config)->snapList);
@@ -289,6 +336,29 @@ dconfObj_del(dconfObj_t *config)
     xfree((*config)->cifogIniFile);
     xfree((*config)->outFileName);
 
+#if defined WITHMETALS
+    xfree((*config)->metal_table_file);
+    /* For metal and dust yields */
+    if((*config)->metalTables_mass != NULL) xfree((*config)->metalTables_mass);
+    if((*config)->metalTables_metallicity != NULL) xfree((*config)->metalTables_metallicity);
+    if((*config)->metalTables_imf != NULL) xfree((*config)->metalTables_imf);
+    if((*config)->metalTables_lifetime != NULL) xfree((*config)->metalTables_lifetime);
+    if((*config)->metalTables_metalYields != NULL) xfree((*config)->metalTables_metalYields);
+    if((*config)->metalTables_metalYields_SNIa != NULL) xfree((*config)->metalTables_metalYields_SNIa);
+    /* OXYGEN */
+    if((*config)->metalTables_metalYieldsO != NULL) xfree((*config)->metalTables_metalYieldsO);
+    if((*config)->metalTables_metalYieldsO_SNIa != NULL) xfree((*config)->metalTables_metalYieldsO_SNIa);
+    /* IRON */
+    if((*config)->metalTables_metalYieldsFe != NULL) xfree((*config)->metalTables_metalYieldsFe);
+    if((*config)->metalTables_metalYieldsFe_SNIa != NULL) xfree((*config)->metalTables_metalYieldsFe_SNIa);
+    /* Returned gas */
+    if((*config)->metalTables_gasYields != NULL) xfree((*config)->metalTables_gasYields);
+    /* Dust */
+    if((*config)->metalTables_dustYields != NULL) xfree((*config)->metalTables_dustYields);
+    /* Useful to compute the SFR */
+    if((*config)->invdeltat != NULL) xfree((*config)->invdeltat);
+#endif
+    
     xfree(*config);
     *config = NULL;
 }
@@ -297,18 +367,18 @@ extern dconfObj_t
 readDconfObj(char *fileName) {
     dconfObj_t newConfObj;
     parse_ini_t ini;
-    
+
     ini = parse_ini_open(fileName);
     if (ini == NULL) {
         fprintf(stderr, "FATAL:  Could not open %s for reading.\n",
                 fileName);
         exit(EXIT_FAILURE);
     }
-    
+
     newConfObj = dconfObj_new(ini);
-    
+
     parse_ini_close(&ini);
-    
+
     return newConfObj;
 }
 

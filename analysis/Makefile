@@ -34,7 +34,9 @@ SOURCES := 	./src/main.c \
 		./src/numdens_analytic.c \
 		./src/statistics_evolution_analytic.c \
 		./src/selection_evolution_analytic.c \
-		./src/output_lists.c
+		./src/output_lists.c \
+		./src/statistics_galaxypairs.c \
+		./src/selection_galaxypairs.c
 		
 OBJECTS := $(SOURCES:.c=.o)
 DOBJECTS := $(SOURCES:.c=.d)

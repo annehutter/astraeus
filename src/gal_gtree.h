@@ -2,6 +2,11 @@
 #define GAL_GTREE_H
 
 typedef struct{
+#if defined WITHROCKSTARID
+  int64_t ID;
+  int64_t descID;
+#endif
+ 
   int32_t localID;
   int32_t localDescID;
   int32_t numProg;
@@ -9,7 +14,7 @@ typedef struct{
   int32_t snapnumber;
   float scalefactor;
   float descScalefactor;
-  
+
   float pos[3];
   float vel[3];
   float Mvir;
@@ -19,17 +24,40 @@ typedef struct{
   float velMax;
   float spin;
   float scalefactorLastMajorMerger;
-  float Mgas;
+
   float MgasIni;
   float fracMgasMer;
+#if defined WITHMETALS
+  float MgasNew;
+  float MgasEj;
+#endif
+  float Mgas;
   float Mstar;
-  
+
+  float fesc;
+  float Nion;
+  float fej;
   float feff;
   float fg;
   float photHI_bg;
   float zreion;
   
   float *stellarmasshistory;
+
+#if defined WITHMETALS
+  float Mmetal[3];
+  float MmetalIni[3];
+  float MmetalNew[3];
+  float fracMmetalMer[3];
+  float MmetalEj[3];
+  float igmMetallicity[3];
+
+  float *metalmasshistory;
+  
+  float Mdust;
+  float MdustEj;
+  float igmDustFraction;
+#endif
 }gal_t;
 
 typedef struct{

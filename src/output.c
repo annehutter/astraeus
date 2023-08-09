@@ -32,6 +32,11 @@ void copy_tree_to_outgtree(gtree_t *thisTree, outgtree_t *thisOutGTree)
 
 void copy_gal_to_outgaltree(gal_t *thisGal, outgal_t *thisOutGal)
 {
+#if defined WITHROCKSTARID
+    thisOutGal->ID = (int64_t) (thisGal->ID);
+    thisOutGal->descID = (int64_t) (thisGal->descID);
+#endif
+  
     thisOutGal->localID = (int32_t) (thisGal->localID);
     thisOutGal->localDescID = (int32_t) (thisGal->localDescID);
     thisOutGal->numProg = (int32_t) (thisGal->numProg);
@@ -51,14 +56,41 @@ void copy_gal_to_outgaltree(gal_t *thisGal, outgal_t *thisOutGal)
     thisOutGal->velMax = (float) (thisGal->velMax);
     thisOutGal->spin = (float) (thisGal->spin);
     thisOutGal->scalefactorLastMajorMerger = (float) (thisGal->scalefactorLastMajorMerger);
-    thisOutGal->Mgas = (float) (thisGal->Mgas);
+    
     thisOutGal->MgasIni = (float) (thisGal->MgasIni);
+#ifndef FIRST
+    thisOutGal->fracMgasMer = (float) (thisGal->fracMgasMer);
+#endif
+#if defined WITHMETALS
+    thisOutGal->MgasNew = (float) (thisGal->MgasNew);
+    thisOutGal->MgasEj = (float) (thisGal->MgasEj);
+#endif
+    thisOutGal->Mgas = (float) (thisGal->Mgas);
     thisOutGal->Mstar = (float) (thisGal->Mstar);
+    
+#ifndef FIRST
+    thisOutGal->fesc = (float) (thisGal->fesc);
+    thisOutGal->Nion = (float) (thisGal->Nion);
+    thisOutGal->fej = (float) (thisGal->fej);
+#endif
     thisOutGal->feff = (float) (thisGal->feff);
     thisOutGal->fg = (float) (thisGal->fg);
     thisOutGal->zreion = (float) (thisGal->zreion);
     thisOutGal->photHI_bg = (float) (thisGal->photHI_bg);
+
+#if defined WITHMETALS
+    for(int i=0; i<3; i++)
+    {
+        thisOutGal->Mmetal[i] = (float) (thisGal->Mmetal[i]);
+        thisOutGal->MmetalIni[i] = (float) (thisGal->MmetalIni[i]);
+        thisOutGal->MmetalNew[i] = (float) (thisGal->MmetalNew[i]);
+        thisOutGal->fracMmetalMer[i] = (float) (thisGal->fracMmetalMer[i]);
+        thisOutGal->MmetalEj[i] = (float) (thisGal->MmetalEj[i]); 
+    }
     
+    thisOutGal->Mdust = (float) (thisGal->Mdust);
+#endif
+        
     if(1./thisGal->scalefactor - 1. > thisGal->zreion && thisGal->zreion > 0.)
       printf("SOMETHING WRONG (thisGal): z = %e\t zreion = %e\t numProg = %d\n", 1./thisGal->scalefactor - 1., thisGal->zreion, thisGal->numProg);
     if(1./thisOutGal->scalefactor - 1. > thisOutGal->zreion && thisOutGal->zreion > 0.)
@@ -82,9 +114,24 @@ void copy_gal_to_outgalsnap(gal_t *thisGal, outgalsnap_t *thisOutGal)
     thisOutGal->velMax = (float) (thisGal->velMax);
     thisOutGal->spin = (float) (thisGal->spin);
     thisOutGal->scalefactorLastMajorMerger = (float) (thisGal->scalefactorLastMajorMerger);
+    
     thisOutGal->Mgas = (float) (thisGal->Mgas);
     thisOutGal->MgasIni = (float) (thisGal->MgasIni);
+#ifndef FIRST
+    thisOutGal->fracMgasMer = (float) (thisGal->fracMgasMer);
+#endif
+#if defined WITHMETALS
+    thisOutGal->MgasNew = (float) (thisGal->MgasNew);
+    thisOutGal->MgasEj = (float) (thisGal->MgasEj);
+#endif
+    thisOutGal->Mgas = (float) (thisGal->Mgas);
     thisOutGal->Mstar = (float) (thisGal->Mstar);
+    
+#ifndef FIRST
+    thisOutGal->fesc = (float) (thisGal->fesc);
+    thisOutGal->Nion = (float) (thisGal->Nion);
+    thisOutGal->fej = (float) (thisGal->fej);
+#endif
     thisOutGal->feff = (float) (thisGal->feff);
     thisOutGal->fg = (float) (thisGal->fg);
     thisOutGal->zreion = (float) (thisGal->zreion);
@@ -92,7 +139,24 @@ void copy_gal_to_outgalsnap(gal_t *thisGal, outgalsnap_t *thisOutGal)
 
     for(int i=0; i<thisGal->snapnumber+1; i++)
         thisOutGal->stellarmasshistory[i] = (float) (thisGal->stellarmasshistory[i]);
-    free(thisGal->stellarmasshistory);   
+    free(thisGal->stellarmasshistory);
+
+#if defined WITHMETALS
+    for(int i=0; i<3; i++)
+    {
+        thisOutGal->Mmetal[i] = (float) (thisGal->Mmetal[i]);
+        thisOutGal->MmetalIni[i] = (float) (thisGal->MmetalIni[i]);
+        thisOutGal->MmetalNew[i] = (float) (thisGal->MmetalNew[i]);
+        thisOutGal->fracMmetalMer[i] = (float) (thisGal->fracMmetalMer[i]);
+        thisOutGal->MmetalEj[i] = (float) (thisGal->MmetalEj[i]);
+    }
+
+    for(int i=0; i<thisGal->snapnumber+1; i++)
+        thisOutGal->metalmasshistory[i] = (float) (thisGal->metalmasshistory[i]);
+    free(thisGal->metalmasshistory);
+    
+    thisOutGal->Mdust = (float) (thisGal->Mdust);
+#endif
 }
 
 void copy_gal_to_outGalList(gal_t *thisGal, int thisOutGal, outgalsnap_t *thisOutGalList)
@@ -111,9 +175,23 @@ void copy_gal_to_outGalList(gal_t *thisGal, int thisOutGal, outgalsnap_t *thisOu
     thisOutGalList[thisOutGal].velMax = (float) (thisGal->velMax);
     thisOutGalList[thisOutGal].spin = (float) (thisGal->spin);
     thisOutGalList[thisOutGal].scalefactorLastMajorMerger = (float) (thisGal->scalefactorLastMajorMerger);
+    
     thisOutGalList[thisOutGal].MgasIni = (float) (thisGal->MgasIni);
+#ifndef FIRST
+    thisOutGalList[thisOutGal].fracMgasMer = (float) (thisGal->fracMgasMer);
+#endif
+#if defined WITHMETALS
+    thisOutGalList[thisOutGal].MgasNew = (float) (thisGal->MgasNew);
+    thisOutGalList[thisOutGal].MgasEj = (float) (thisGal->MgasEj);
+#endif
     thisOutGalList[thisOutGal].Mgas = (float) (thisGal->Mgas);
     thisOutGalList[thisOutGal].Mstar = (float) (thisGal->Mstar);
+    
+#ifndef FIRST
+    thisOutGalList[thisOutGal].fesc = (float) (thisGal->fesc);
+    thisOutGalList[thisOutGal].Nion = (float) (thisGal->Nion);
+    thisOutGalList[thisOutGal].fej = (float) (thisGal->fej);
+#endif
     thisOutGalList[thisOutGal].feff = (float) (thisGal->feff);
     thisOutGalList[thisOutGal].fg = (float) (thisGal->fg);
     thisOutGalList[thisOutGal].zreion = (float) (thisGal->zreion);
@@ -121,7 +199,24 @@ void copy_gal_to_outGalList(gal_t *thisGal, int thisOutGal, outgalsnap_t *thisOu
 
     for(int i=0; i<thisGal->snapnumber+1; i++)
         thisOutGalList[thisOutGal].stellarmasshistory[i] = (float) (thisGal->stellarmasshistory[i]);
-    free(thisGal->stellarmasshistory); 
+    free(thisGal->stellarmasshistory);
+
+#if defined WITHMETALS
+    for(int i=0; i<3; i++)
+    {
+        thisOutGalList[thisOutGal].Mmetal[i] = (float) (thisGal->Mmetal[i]);
+        thisOutGalList[thisOutGal].MmetalIni[i] = (float) (thisGal->MmetalIni[i]);
+        thisOutGalList[thisOutGal].MmetalNew[i] = (float) (thisGal->MmetalNew[i]);
+        thisOutGalList[thisOutGal].fracMmetalMer[i] = (float) (thisGal->fracMmetalMer[i]);
+        thisOutGalList[thisOutGal].MmetalEj[i] = (float) (thisGal->MmetalEj[i]);
+    }
+
+    for(int i=0; i<thisGal->snapnumber+1; i++)
+        thisOutGalList[thisOutGal].metalmasshistory[i] = (float) (thisGal->metalmasshistory[i]);
+    free(thisGal->metalmasshistory);
+    
+   thisOutGalList[thisOutGal].Mdust = (float) (thisGal->Mdust);
+#endif
 }
 
 /*-------------------------------------------------------*/
@@ -201,7 +296,16 @@ void write_galaxies_of_snap_to_file(dconfObj_t simParam, int snap, int numOutGal
 
     /* Create the outgalsnap_t type for MPI */
     MPI_Datatype OUTGALSNAP_T;
+#if defined FIRST
     MPI_Type_contiguous(OUTPUTSNAPNUMBER+21, MPI_FLOAT, &OUTGALSNAP_T);
+#else
+#if defined WITHMETALS
+    MPI_Type_contiguous(2*OUTPUTSNAPNUMBER+43, MPI_FLOAT, &OUTGALSNAP_T);
+#else
+    MPI_Type_contiguous(OUTPUTSNAPNUMBER+25, MPI_FLOAT, &OUTGALSNAP_T);
+#endif
+#endif
+    
     MPI_Type_commit(&OUTGALSNAP_T);
 #else
     FILE *file;

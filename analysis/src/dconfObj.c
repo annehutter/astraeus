@@ -119,6 +119,14 @@ dconfObj_new(parse_ini_t ini)
     config->binsPerMag_1D = NULL;
     config->cumulative = NULL;
     
+    config->selectionProperty1 = NULL;
+    config->minSelectionProperty1 = NULL;
+    config->maxSelectionProperty1 = NULL;
+    config->selectionProperty2 = NULL;
+    config->minSelectionProperty2 = NULL;
+    config->maxSelectionProperty2 = NULL;
+    config->maxDistanceInComMpc = NULL;
+    
     config->outputLists = 0;
     
     config->property_1D_evolution = NULL;
@@ -398,6 +406,30 @@ dconfObj_new(parse_ini_t ini)
                 ini, "cumulative", "1dnumDensHistogram", config->num_1D);
     }
     
+    config->num_galaxyPairs = 0;
+    checkFromIni(&(config->num_galaxyPairs), parse_ini_get_int32,
+               ini, "num_galaxyPairs", "GalaxyPairs");
+    if(config->num_galaxyPairs > 0)
+    {
+      getListFromIni(&(config->selectionProperty1), parse_ini_get_stringlist,
+                ini, "selectionProperty1", "GalaxyPairs", config->num_galaxyPairs);
+      getListFromIni(&(config->minSelectionProperty1), parse_ini_get_doublelist,
+                ini, "minSelectionProperty1", "GalaxyPairs", config->num_galaxyPairs);
+      getListFromIni(&(config->maxSelectionProperty1), parse_ini_get_doublelist,
+                ini, "maxSelectionProperty1", "GalaxyPairs", config->num_galaxyPairs);
+      
+      getListFromIni(&(config->selectionProperty2), parse_ini_get_stringlist,
+                ini, "selectionProperty2", "GalaxyPairs", config->num_galaxyPairs);
+      getListFromIni(&(config->minSelectionProperty2), parse_ini_get_doublelist,
+                ini, "minSelectionProperty2", "GalaxyPairs", config->num_galaxyPairs);
+      getListFromIni(&(config->maxSelectionProperty2), parse_ini_get_doublelist,
+                ini, "maxSelectionProperty2", "GalaxyPairs", config->num_galaxyPairs);
+      getListFromIni(&(config->maxDistanceInComMpc), parse_ini_get_doublelist,
+                ini, "maxDistanceInComMpc", "GalaxyPairs", config->num_galaxyPairs);
+      getListFromIni(&(config->propertyWithHistory_galaxyPairs), parse_ini_get_stringlist,
+                ini, "propertyWithHistory_galaxyPairs", "GalaxyPairs", config->num_galaxyPairs);
+    }
+    
     getFromIni(&(config->trackEvolution), parse_ini_get_int32,
                ini, "trackEvolution", "AnalysisEvolution");
     
@@ -580,6 +612,21 @@ dconfObj_del(dconfObj_t *config)
     xfree((*config)->binsInLog_1D);
     xfree((*config)->binsPerMag_1D);
     xfree((*config)->cumulative);
+    
+    for(int i=0; i<(*config)->num_galaxyPairs; i++)
+    {
+      if((*config)->selectionProperty1[i] != NULL) xfree((*config)->selectionProperty1[i]);
+      if((*config)->selectionProperty2[i] != NULL) xfree((*config)->selectionProperty2[i]);
+      if((*config)->propertyWithHistory_galaxyPairs[i] != NULL) xfree((*config)->propertyWithHistory_galaxyPairs[i]);
+    }
+    if((*config)->selectionProperty1 != NULL) xfree((*config)->selectionProperty1);
+    if((*config)->minSelectionProperty1 != NULL) xfree((*config)->minSelectionProperty1);
+    if((*config)->maxSelectionProperty1 != NULL) xfree((*config)->maxSelectionProperty1);
+    if((*config)->selectionProperty2 != NULL) xfree((*config)->selectionProperty2);
+    if((*config)->minSelectionProperty2 != NULL) xfree((*config)->minSelectionProperty2);
+    if((*config)->maxSelectionProperty2 != NULL) xfree((*config)->maxSelectionProperty2);
+    if((*config)->maxDistanceInComMpc != NULL) xfree((*config)->maxDistanceInComMpc);
+    if((*config)->propertyWithHistory_galaxyPairs != NULL) xfree((*config)->propertyWithHistory_galaxyPairs);
     
     for(int i=0; i<(*config)->num_1D_evolution; i++)
     {

@@ -48,7 +48,8 @@ int cifog_init(char *iniFile, confObj_t *simParam, grid_t **grid,  integral_tabl
 #endif
     
     //read paramter file
-    *simParam = readConfObj(iniFile);
+    if(*simParam == NULL)
+      *simParam = readConfObj(iniFile);
     
     //verify that helium runs contain helium!
     if((*simParam)->solve_He == 1)

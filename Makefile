@@ -1,5 +1,6 @@
 SOURCES := 	./src/main.c \
 		./src/utils.c \
+		./src/const.c \
 		./src/xmem.c \
 		./src/xstring.c \
 		./src/parse_ini.c \
@@ -19,6 +20,7 @@ SOURCES := 	./src/main.c \
 		./src/photion_gal.c \
 		./src/cutandresort.c \
 		./src/evol_gal.c \
+		./src/metallicity.c \
 		./src/radiative_feedback.c \
 		./src/starformation_SNfeedback.c \
 		./src/ion_emissivity.c \

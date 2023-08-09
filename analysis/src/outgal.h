@@ -17,14 +17,37 @@ typedef struct{
   float velMax;
   float spin;
   float scalefactorLastMajorMerger;
+  
   float MgasIni;
+#ifndef FIRST
+  float fracMgasMer;
+#endif
+#if defined WITHMETALS
+  float MgasNew;
+  float MgasEj;
+#endif
   float Mgas;
   float Mstar;
   
+#ifndef FIRST
+  float fesc;
+  float Nion;
+  float fej;
+#endif
   float feff;
   float fg;
   float zreion;
   float photHI_bg;
+  
+#if defined WITHMETALS
+  float Mmetal[3];
+  float MmetalIni[3];
+  float MmetalNew[3];
+  float fracMmetalMer[3];
+  float MmetalEj[3];
+  
+  float Mdust;
+#endif
 }outgal_t; 
 
 typedef struct{

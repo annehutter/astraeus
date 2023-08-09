@@ -138,6 +138,16 @@ struct dconfObj_struct {
     int         *binsInLog_1D;
     int         *binsPerMag_1D;
     int         *cumulative;
+    
+    int         num_galaxyPairs;
+    char        **selectionProperty1;
+    double      *minSelectionProperty1;
+    double      *maxSelectionProperty1;
+    char        **selectionProperty2;
+    double      *minSelectionProperty2;
+    double      *maxSelectionProperty2;
+    double      *maxDistanceInComMpc;
+    char        **propertyWithHistory_galaxyPairs;
         
     int         trackEvolution;
     
