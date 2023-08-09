@@ -86,8 +86,8 @@ Note that the ``OUTPUTSNAPNUMBER`` needs to be adjusted to the number of snapsho
 Define necessary preprocessor flags:
 
 1. None : ``ASTRAEUS`` is run with the latest star formation, supernovae and radiative feedback descriptions but does NOT follow metal and dust mass reservoirs (see `Hutter et al. (2023a) <https://ui.adsabs.harvard.edu/abs/2023MNRAS.tmp.2201H/abstract>`__)
-2. :red:` ``WITHMETALS`` ` : ``ASTRAEUS`` is run with the latest star formation, supernovae and radiative feedback descriptions and follows metal and dust mass reservoirs (see `Hutter et al. (2023a) <https://ui.adsabs.harvard.edu/abs/2023MNRAS.tmp.2201H/abstract>`__)
-3. :blue:` ``FIRST`` ` : Same as `None` but format of output corresponds to that used for the simulations described in `Hutter et al. (2021) <https://ui.adsabs.harvard.edu/abs/2021MNRAS.tmp..610H/abstract>`__ (backwards compatible)
+2. $${\color{red} ``WITHMETALS``}$$ : ``ASTRAEUS`` is run with the latest star formation, supernovae and radiative feedback descriptions and follows metal and dust mass reservoirs (see `Hutter et al. (2023a) <https://ui.adsabs.harvard.edu/abs/2023MNRAS.tmp.2201H/abstract>`__)
+3. $${\color{blue} ``FIRST``}$$ : Same as `None` but format of output corresponds to that used for the simulations described in `Hutter et al. (2021) <https://ui.adsabs.harvard.edu/abs/2021MNRAS.tmp..610H/abstract>`__ (backwards compatible)
 
 Execution
 ---------
